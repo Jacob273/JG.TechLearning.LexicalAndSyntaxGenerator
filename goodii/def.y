@@ -1,6 +1,7 @@
 %{
 int yylex();
 void yyerror(const char *s);
+void appendToOutput(char* newText);
 %}
 
 %{
@@ -22,17 +23,22 @@ void yyerror(const char *s);
 %nterm <textValue> item;
 %token<textValue> TEXT;
 %token<integerValue> NUMBER;
-
+%start program
 /* Rules Definition */
 %%
 
+program:
+     item { appendToOutput($1); }
+     ;
+
 item:
-       TEXT    { $$ = $1;}
-     // | NUMBER  { printf("BIS::NUMBER\n"); $$ = $1; }
+       TEXT { $$ = $1; }
      ;
 %%
 
 /**
+
+| NUMBER  { printf("BIS::NUMBER\n"); $$ = $1; }
 The Bison parser detects a syntax error (or parse error)
  whenever it reads a token which cannot satisfy any syntax rule.
 **/
@@ -61,6 +67,14 @@ int main (int argc, char *argv[])
 
 
      
-          return yyparse();
+     return yyparse();
      // fclose(pt);
+}
+
+void appendToOutput(char* newText){
+     printf("appending to output %s", newText);
+     FILE *pFile;
+     pFile = fopen("output.txt","w");
+     fprintf(pFile, "%s", newText);
+     fclose(pFile);
 }
