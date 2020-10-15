@@ -6,35 +6,37 @@
 #define OUTFILE_ERROR 2
 extern int yylineno;
 int yyerror(char *,...);
-void printLexValue(char *);
+void sendToOutputStream(char *);
 %}
 
 %%
-intii					{ printLexValue("LEX::int");} 
-\+						{ printLexValue("LEX::+"); } 
-\*						{ printLexValue("LEX::*"); }
-\(						{ printLexValue("LEX::("); }
-\)						{ printLexValue("LEX::)"); }
-\/						{ printLexValue("LEX::/"); }
-\-						{ printLexValue("LEX::-"); }
-\^						{ printLexValue("LEX::^"); }
-\=						{ printLexValue("LEX::="); }
-[1-9][0-9]*				{ printLexValue("LEX::NUM"); }	
+intii					{ 
+							yylval.textValue = strdup("int");
+							return INT;
+						} 
+\+						{ sendToOutputStream("LEX::+"); } 
+\*						{ sendToOutputStream("LEX::*"); }
+\(						{ sendToOutputStream("LEX::("); }
+\)						{ sendToOutputStream("LEX::)"); }
+\/						{ sendToOutputStream("LEX::/"); }
+\-						{ sendToOutputStream("LEX::-"); }
+\^						{ sendToOutputStream("LEX::^"); }
+\=						{ sendToOutputStream("LEX::="); }
+[1-9][0-9]*				{ sendToOutputStream(yytext); }	
 [A-Za-z_][A-Za-z0-9_]*	{ 
-							printLexValue("LEX::text");
 							yylval.textValue = strdup(yytext);
 							return TEXT;
 						}
-[1-9]+[.]{2}			{ printLexValue("LEX::DECIMAL");}
+[1-9]+[.]{2}			{ sendToOutputStream("LEX::DECIMAL");}
 \ |\t					{;}
-;						{;}
+;						{sendToOutputStream(";");}
 \n						{ yylineno++;}
 .						{ yyerror("LEX::Lexical error....\n");}
 %%
 
-void printLexValue(char *value)
+void sendToOutputStream(char *value)
 {
-	fprintf(yyout, "%d::%s\n", yylineno, value);
+	fprintf(yyout, "%s\n", value);
 }
 
 int yyerror(char *msg,...)
