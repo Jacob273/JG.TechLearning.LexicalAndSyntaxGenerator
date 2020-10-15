@@ -24,7 +24,7 @@ bool removeFile(char* path);
 
 
 /** Tokens **/
-%nterm<textValue> typeName var semiColon;
+%nterm<textValue> typeName var semiColon newLine;
 %start program;
 
 %right '='
@@ -34,19 +34,29 @@ bool removeFile(char* path);
 %token<textValue> TEXT;
 %token<integerValue> NUMBER;
 %token<textValue> INT;
+%token<textValue> DOUBLE;
 %token<textValue> SEMICOLON;
 %token<textValue> VAR;
+%token<textValue> NEWLINE;
 
 /* Rules Definition */
 %%
 
 program:
-     typeName var semiColon { 
+     expression newLine expression 
+     ;
+
+expression:
+     typeName var semiColon
+                          { 
                               appendToOutputFile($1, false); 
                               appendToOutputFile($2, true); 
                               appendToOutputFile($3, false);
                            }
      ;
+
+newLine:
+     NEWLINE {  appendToOutputFile($1, false); }
 
 semiColon:
      SEMICOLON { $$ = $1; }
@@ -58,7 +68,8 @@ var:
 
 
 typeName:
-     INT { $$ = $1; }
+       INT { $$ = $1; }
+     | DOUBLE { $$ = $1; }
       ;
 
 
@@ -89,7 +100,7 @@ void appendToOutputFile(char* newText, bool includeSpace){
      {
           if(removeFile(outputFileName))
           {
-               printf("Deleted output file...");
+               printf("Deleted output file...\n");
                firstTimeExecution = false;
           }
      }

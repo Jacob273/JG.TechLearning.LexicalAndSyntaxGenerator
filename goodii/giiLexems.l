@@ -14,6 +14,10 @@ intii					{
 							yylval.textValue = strdup("int");
 							return INT;
 						} 
+dublii					{ 
+							yylval.textValue = strdup("double");
+							return DOUBLE;
+						} 		
 \+						{ sendToOutputStream("LEX::+"); } 
 \*						{ sendToOutputStream("LEX::*"); }
 \(						{ sendToOutputStream("LEX::("); }
@@ -33,7 +37,10 @@ intii					{
 							yylval.textValue = strdup(";");
 							return SEMICOLON;
 						}
-\n						{ yylineno++;}
+\n						{  yylineno++; 
+							yylval.textValue = strdup("\n");
+							return NEWLINE;
+						}
 .						{ yyerror("LEX::Lexical error....\n");}
 %%
 
