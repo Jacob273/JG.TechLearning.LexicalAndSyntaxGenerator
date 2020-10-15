@@ -59,17 +59,17 @@ newLine:
      NEWLINE {  appendToOutputFile($1, false); }
 
 semiColon:
-     SEMICOLON { $$ = $1; }
+     SEMICOLON
      ;
 
 var:
-     TEXT    { $$ = $1; }
+     TEXT 
      ;
 
 
 typeName:
-       INT { $$ = $1; }
-     | DOUBLE { $$ = $1; }
+       INT
+     | DOUBLE
       ;
 
 
