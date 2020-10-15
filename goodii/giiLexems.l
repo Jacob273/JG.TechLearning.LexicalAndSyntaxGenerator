@@ -29,7 +29,10 @@ intii					{
 						}
 [1-9]+[.]{2}			{ sendToOutputStream("LEX::DECIMAL");}
 \ |\t					{;}
-;						{sendToOutputStream(";");}
+;						{
+							yylval.textValue = strdup(";");
+							return SEMICOLON;
+						}
 \n						{ yylineno++;}
 .						{ yyerror("LEX::Lexical error....\n");}
 %%

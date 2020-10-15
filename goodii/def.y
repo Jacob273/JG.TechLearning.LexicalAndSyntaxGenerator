@@ -12,7 +12,7 @@
 %{
 int yylex();
 void yyerror(const char *s);
-void appendToOutputFile(char* newText);
+void appendToOutputFile(char* newText, bool addSpace);
 bool removeFile(char* path);
 %}
 
@@ -24,31 +24,42 @@ bool removeFile(char* path);
 
 
 /** Tokens **/
-%nterm <textValue> item;
-%token<textValue> TEXT;
-%token<integerValue> NUMBER;
-%start program
+%nterm<textValue> typeName var semiColon;
+%start program;
+
 %right '='
 %left '+' '-'
 %left '*'
-%token<textValue> INT
+
+%token<textValue> TEXT;
+%token<integerValue> NUMBER;
+%token<textValue> INT;
+%token<textValue> SEMICOLON;
+%token<textValue> VAR;
 
 /* Rules Definition */
 %%
 
 program:
-     item item { appendToOutputFile($1); appendToOutputFile($2);}
+     typeName var semiColon { 
+                              appendToOutputFile($1, false); 
+                              appendToOutputFile($2, true); 
+                              appendToOutputFile($3, false);
+                           }
      ;
 
-item:
-       TEXT    { $$ = $1; }
-     | NUMBER  { 
-                 char bufferForString[100];
-                 sprintf(bufferForString, "%d", $1);
-                 $$ = bufferForString; 
-               }
-     | INT     { $$ = $1; }
+semiColon:
+     SEMICOLON { $$ = $1; }
      ;
+
+var:
+     TEXT    { $$ = $1; }
+     ;
+
+
+typeName:
+     INT { $$ = $1; }
+      ;
 
 
 
@@ -68,24 +79,26 @@ int main (int argc, char *argv[])
      return parsingResult;
 }
 
-bool wasFileDeleted = false;
+bool firstTimeExecution = true;
 char* outputFileName = "output_goodii.txt";
 
-void appendToOutputFile(char* newText){
+void appendToOutputFile(char* newText, bool includeSpace){
 
-     if(!wasFileDeleted)
+
+     if(firstTimeExecution)
      {
           if(removeFile(outputFileName))
           {
                printf("Deleted output file...");
-               wasFileDeleted = true;
+               firstTimeExecution = false;
           }
      }
 
      printf("Appending text to output....: \n%s\n", newText);
      FILE *pFile;
-     pFile = fopen(outputFileName,"a");
-     fprintf(pFile, " %s", newText);
+     pFile = fopen(outputFileName, "a");
+     char* argumentTypeText = includeSpace == true ? " %s" : "%s";
+     fprintf(pFile, argumentTypeText, newText);  
      fclose(pFile);
 }
 
@@ -109,4 +122,11 @@ bool removeFile(char* path){
      the operator nest: whether ‘x op y op z’ is parsed by grouping 
      x with y first or by grouping y with z first.
 ==================================================================================================
+
+     | NUMBER  { 
+                 char bufferForString[100];
+                 sprintf(bufferForString, "%d", $1);
+                 $$ = bufferForString; 
+               }
+
 **/
