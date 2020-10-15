@@ -1,0 +1,2 @@
+intii a;
+dublii b;
