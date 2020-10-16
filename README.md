@@ -2,7 +2,7 @@
 
 # Contents
 
-[**Goodii Language Specification** 1](#_Toc53317531)
+[**Goodii Language Specification** ]
 
 [**Goodii Types** 2](#_Toc53317532)
 
