@@ -1,4 +1,5 @@
 %{
+     #include <iostream>
      #include <stdbool.h>
      #include <stdio.h>
      #include <stdlib.h>
@@ -15,6 +16,7 @@
 %{
 void appendToOutputFile(std::string newText, bool addSpace);
 bool removeFile(std::string path);
+void printInfo(std::string newText);
 %}
 
 %union 
@@ -92,17 +94,11 @@ int main (int argc, char *argv[])
           fputs("Error occured while parsing.", stdout);
      }
 
-     for(int i = 0 ; i < goodiiCode.size(); i++)
-     {
-          printf("vector: %d = %s ", i, goodiiCode.at(i).c_str());
-     }
-
      return parsingResult;
 }
 
 
 void appendToOutputFile(std::string newText, bool includeSpace){
-
      if(firstTimeExecution)
      {
           if(removeFile(outputFileName.c_str()))
@@ -112,7 +108,7 @@ void appendToOutputFile(std::string newText, bool includeSpace){
           }
      }
      goodiiCode.push_back(newText);
-     printf("Appending text to a file: <<%s>>\n", newText.c_str());
+     printInfo(newText); 
      FILE *pFile;
      pFile = fopen(outputFileName.c_str(), "a");
      std::string argumentTypeText = includeSpace == true ? " %s" : "%s";
@@ -124,6 +120,13 @@ bool removeFile(std::string path){
      return remove(path.c_str()) == 0;
 }
 
+void printInfo(std::string newText){
+     if(newText == "\n")
+     {
+          newText = "NEWLINE";
+     }
+     std::cout << "Appending text to a file:<" << newText <<">" << "\n";
+}
 
 /** Documentation
 ==================================================================================================
