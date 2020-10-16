@@ -33,10 +33,11 @@ void printInfo(std::string newText);
 %left '+' '-'
 %left '*'
 
-%token<textValue> TEXT;
 %token<integerValue> NUMBER;
+%token<textValue> TEXT;
 %token<textValue> INT;
 %token<textValue> DOUBLE;
+%token<textValue> STRINGI;
 %token<textValue> SEMICOLON;
 %token<textValue> VAR;
 %token<textValue> NEWLINE;
@@ -72,6 +73,7 @@ var:
 typeName:
        INT
      | DOUBLE
+     | STRINGI
       ;
 
 

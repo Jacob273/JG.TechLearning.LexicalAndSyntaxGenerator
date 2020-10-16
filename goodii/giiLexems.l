@@ -1,7 +1,7 @@
 %{
 #include <stdlib.h>
 #include <string.h>
-#include "def.tab.h"
+#include "def.tab.hh"
 #define INFILE_ERROR 1
 #define OUTFILE_ERROR 2
 extern int yylineno;
@@ -17,7 +17,11 @@ intii					{
 dublii					{ 
 							yylval.textValue = strdup("double");
 							return DOUBLE;
-						} 		
+						}
+stringii					{ 
+							yylval.textValue = strdup("string");
+							return STRINGI;
+						}
 \+						{ sendToOutputStream("LEX::+"); } 
 \*						{ sendToOutputStream("LEX::*"); }
 \(						{ sendToOutputStream("LEX::("); }
