@@ -39,7 +39,7 @@
 
 | name | description |
 | --- | --- |
-| whilii(_ condition _){ _//block of code_ } | whilii can execute a block of code as long as condition is true. |
+| **whilii(_ condition _){ _//block of code_ }** | whilii can execute a block of code as long as condition is true. |
 
 
 
