@@ -2,7 +2,10 @@
      #include <stdbool.h>
      #include <stdio.h>
      #include <stdlib.h>
-     #include <string.h>
+     #include <string>
+     #include <vector>
+     extern "C" int yylex();
+     extern "C" int yyerror(const char *msg, ...);
 	#define INFILE_ERROR 1
 	#define OUTFILE_ERROR 2
      extern FILE *yyin;
@@ -10,10 +13,8 @@
 %}
 
 %{
-int yylex();
-void yyerror(const char *s);
-void appendToOutputFile(char* newText, bool addSpace);
-bool removeFile(char* path);
+void appendToOutputFile(std::string newText, bool addSpace);
+bool removeFile(std::string path);
 %}
 
 %union 
@@ -21,7 +22,6 @@ bool removeFile(char* path);
 	char *textValue;
 	int	integerValue;
 };
-
 
 /** Tokens **/
 %nterm<textValue> typeName var semiColon newLine;
@@ -39,7 +39,7 @@ bool removeFile(char* path);
 %token<textValue> VAR;
 %token<textValue> NEWLINE;
 
-/* Rules Definition */
+/** Rules Definition **/
 %%
 
 program:
@@ -49,14 +49,14 @@ program:
 expression:
      typeName var semiColon
                           { 
-                              appendToOutputFile($1, false); 
-                              appendToOutputFile($2, true); 
-                              appendToOutputFile($3, false);
+                              appendToOutputFile(std::string($1), false); 
+                              appendToOutputFile(std::string($2), true); 
+                              appendToOutputFile(std::string($3), false);
                            }
      ;
 
 newLine:
-     NEWLINE {  appendToOutputFile($1, false); }
+     NEWLINE {  appendToOutputFile(std::string($1), false); }
 
 semiColon:
      SEMICOLON
@@ -76,6 +76,10 @@ typeName:
 
 %%
 
+bool firstTimeExecution = true;
+std::string outputFileName = "output_goodii.txt";
+std::vector<std::string> goodiiCode;
+
 int main (int argc, char *argv[]) 
 {
      int parsingResult = yyparse();
@@ -87,34 +91,37 @@ int main (int argc, char *argv[])
      {
           fputs("Error occured while parsing.", stdout);
      }
+
+     for(int i = 0 ; i < goodiiCode.size(); i++)
+     {
+          printf("vector: %d = %s ", i, goodiiCode.at(i).c_str());
+     }
+
      return parsingResult;
 }
 
-bool firstTimeExecution = true;
-char* outputFileName = "output_goodii.txt";
 
-void appendToOutputFile(char* newText, bool includeSpace){
-
+void appendToOutputFile(std::string newText, bool includeSpace){
 
      if(firstTimeExecution)
      {
-          if(removeFile(outputFileName))
+          if(removeFile(outputFileName.c_str()))
           {
                printf("Deleted output file...\n");
                firstTimeExecution = false;
           }
      }
-
-     printf("Appending text to output....: \n%s\n", newText);
+     goodiiCode.push_back(newText);
+     printf("Appending text to a file: <<%s>>\n", newText.c_str());
      FILE *pFile;
-     pFile = fopen(outputFileName, "a");
-     char* argumentTypeText = includeSpace == true ? " %s" : "%s";
-     fprintf(pFile, argumentTypeText, newText);  
+     pFile = fopen(outputFileName.c_str(), "a");
+     std::string argumentTypeText = includeSpace == true ? " %s" : "%s";
+     fprintf(pFile, argumentTypeText.c_str(), newText.c_str());  
      fclose(pFile);
 }
 
-bool removeFile(char* path){
-     return remove(path) == 0;
+bool removeFile(std::string path){
+     return remove(path.c_str()) == 0;
 }
 
 
