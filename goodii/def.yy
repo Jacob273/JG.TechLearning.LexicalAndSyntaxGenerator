@@ -109,7 +109,7 @@ expression:
 	| COMPONENTS
 	;
 components:
-	 COMPONENTS '*' elementCmp
+	  COMPONENTS '*' elementCmp
 	| COMPONENTS '/' elementCmp
 	| elementCmp
 	;
@@ -150,7 +150,6 @@ void appendToOutputFile(std::string newText, bool includeSpace){
                firstTimeExecution = false;
           }
      }
-     goodiiCode.push_back(newText);
      printInfo(newText); 
      FILE *pFile;
      pFile = fopen(outputFileName.c_str(), "a");
@@ -187,10 +186,5 @@ void printInfo(std::string newText){
      x with y first or by grouping y with z first.
 ==================================================================================================
 
-     | NUMBER  { 
-                 char bufferForString[100];
-                 sprintf(bufferForString, "%d", $1);
-                 $$ = bufferForString; 
-               }
 
 **/
