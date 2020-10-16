@@ -32,7 +32,7 @@
 | --- | --- |
 | **intii** | 32-bit signed integer |
 | **dublii** | 64-bit double precision floating point type |
-| **stringii** |
+| **stringii** | .. |
 | **boolii** | Boolean value |
 
 ## **Goodii Loops**
@@ -63,15 +63,15 @@
 
 | operator | description |
 | --- | --- |
-| **|\*|** | Multiplies both operands |
-| **|/|** | Divides numerator by de-numerator |
-| **|-|** | Substract second operand from the first |
-| **|+|** | Adds two operands |
-| **|==|** | Checks if two operands are equal. |
-| **|!=|** | Checks if two operands are not equal |
-| **|=|** | Assignment operator |
-| **|++|** | Increment operator increases integer value by one |
-| **|--|** | Decrement operator decreases integer value by one |
+| \|*\| | Multiplies both operands |
+| \|/\| | Divides numerator by de-numerator |
+| \|-\| | Substract second operand from the first |
+| \|+\| | Adds two operands |
+| \|==\| | Checks if two operands are equal. |
+| \|!=\| | Checks if two operands are not equal |
+| \|=\| | Assignment operator |
+| \|++\| | Increment operator increases integer value by one |
+| \|--\| | Decrement operator decreases integer value by one |
 
 ## ~~**Goodii Logical operators (not supported)**~~
 
