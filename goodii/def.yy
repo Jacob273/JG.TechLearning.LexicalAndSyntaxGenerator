@@ -23,10 +23,11 @@ void printInfo(std::string newText);
 {
 	char *textValue;
 	int	integerValue;
+     double decimalValue;
 };
 
 /** Tokens **/
-%nterm<textValue> typeName var semiColon;
+%nterm<textValue> typeName var semiColon assignment declaration expression components elementCmp;
 %start program;
 
 %right '='
@@ -41,21 +42,47 @@ void printInfo(std::string newText);
 %token<textValue> SEMICOLON;
 %token<textValue> VAR;
 %token<textValue> BOOLEAN;
-
+%token<textValue> VALUE_INTEGER;
+%token<textValue> VALUE_DECIMAL;
+%token<textValue> MEQ;
+%token<textValue> LEQ;
+%token<textValue> NEQ;
+%token<textValue> EQ;
+%token<textValue> EXPRESSION;
+%token<textValue> COMPONENTS;
+%token<textValue> ELEMENT;
+%token<textValue> ASSIGNMENT_OPERATOR;
+%token<textValue> ADD_OPERATOR;
 /** Rules Definition **/
 %%
 
 program:
-     expression 
-     | expression program
+       line 
+     | program line
      ;
 
-expression:
+line:
+       declaration
+     | declaration line 
+     | assignment
+     | assignment line
+     ;
+     
+assignment:
+	 typeName var ASSIGNMENT_OPERATOR semiColon { 
+                                                  appendToOutputFile(std::string($1), false); 
+                                                  appendToOutputFile(std::string($2), false); 
+                                                  appendToOutputFile(std::string("="), false); 
+                                                  appendToOutputFile(std::string($4), false); 
+                                                   }
+	;
+
+declaration:
      typeName var semiColon
                           { 
                               appendToOutputFile(std::string($1), false); 
                               appendToOutputFile(std::string($2), true); 
-                              appendToOutputFile(std::string($3), false);
+                              appendToOutputFile(std::string($3), true); 
                            }
      ;
 
@@ -65,7 +92,7 @@ semiColon:
      ;
 
 var:
-     TEXT 
+     TEXT
      ;
 
 
@@ -76,7 +103,21 @@ typeName:
      | BOOLEAN
       ;
 
+expression:
+       COMPONENTS ADD_OPERATOR EXPRESSION
+	| COMPONENTS '-' EXPRESSION
+	| COMPONENTS
+	;
+components:
+	 COMPONENTS '*' elementCmp
+	| COMPONENTS '/' elementCmp
+	| elementCmp
+	;
 
+elementCmp:
+	  VALUE_INTEGER			{  appendToOutputFile(std::string($1), false);}
+	| VALUE_DECIMAL			{  appendToOutputFile(std::string($1), false); }
+	;
 
 %%
 
