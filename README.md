@@ -94,15 +94,14 @@ Declaration of arrays with length = 5.
 
 
 
-## **Goodii Input/Output **
+## Goodii Input/Output
 | name | description |
 | --- | --- |
-| **Printi(**_ **value as texti** _**)** | Printing **stringii** value to output stream. |
-| **Printi** _**(value as intii)**_ | Printing **intii** value to output stream. |
-| **Input** _**(value as stringii)**_ | Reading **stringii** value from input stream and returns **stringii**. |
-| **Input** _**(value as intii)**_ | Reading **intii** value from input stream and returns **intii**. |
+| **Printi (value as texti**) | Printing **stringii** value to output stream. |
+| **Printi (value as intii)** | Printing **intii** value to output stream. |
+| **Input (value as stringii)** | Reading **stringii** value from input stream and returns **stringii**. |
+| **Input (value as intii)** | Reading **intii** value from input stream and returns **intii**. |
 
-## **Goodii Input/Output**
 
 ## **Examples**
 
