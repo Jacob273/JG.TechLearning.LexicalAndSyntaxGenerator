@@ -18,9 +18,13 @@ dublii					{
 							yylval.textValue = strdup("double");
 							return DOUBLE;
 						}
-stringii					{ 
+stringii				{ 
 							yylval.textValue = strdup("string");
 							return STRINGI;
+						}
+boolii					{ 
+							yylval.textValue = strdup("bool");
+							return BOOLEAN;
 						}
 \+						{ sendToOutputStream("LEX::+"); } 
 \*						{ sendToOutputStream("LEX::*"); }
@@ -36,15 +40,12 @@ stringii					{
 							return TEXT;
 						}
 [1-9]+[.]{2}			{ sendToOutputStream("LEX::DECIMAL");}
-\ |\t					{;}
+[ \t]					{;}
 ;						{
 							yylval.textValue = strdup(";");
 							return SEMICOLON;
 						}
-\n						{  yylineno++; 
-							yylval.textValue = strdup("\n");
-							return NEWLINE;
-						}
+[\n]					{  yylineno++; }
 .						{ yyerror("LEX::Lexical error....\n");}
 %%
 

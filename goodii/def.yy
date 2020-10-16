@@ -26,7 +26,7 @@ void printInfo(std::string newText);
 };
 
 /** Tokens **/
-%nterm<textValue> typeName var semiColon newLine;
+%nterm<textValue> typeName var semiColon;
 %start program;
 
 %right '='
@@ -40,13 +40,14 @@ void printInfo(std::string newText);
 %token<textValue> STRINGI;
 %token<textValue> SEMICOLON;
 %token<textValue> VAR;
-%token<textValue> NEWLINE;
+%token<textValue> BOOLEAN;
 
 /** Rules Definition **/
 %%
 
 program:
-     expression newLine expression 
+     expression 
+     | expression program
      ;
 
 expression:
@@ -58,8 +59,6 @@ expression:
                            }
      ;
 
-newLine:
-     NEWLINE {  appendToOutputFile(std::string($1), false); }
 
 semiColon:
      SEMICOLON
@@ -74,6 +73,7 @@ typeName:
        INT
      | DOUBLE
      | STRINGI
+     | BOOLEAN
       ;
 
 
