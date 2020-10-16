@@ -48,11 +48,11 @@
 
 ## **Goodii Relational operators**
 
-| \&gt; | Checks if the value of left operand is greater than value of right operand |
+| > | Checks if the value of left operand is greater than value of right operand |
 | --- | --- |
-| \&lt; | Checks if the value of left operand is less than value of right operand |
-| \&gt;= | Checks if the value of left operand is greater than or equal value of right operand |
-| \&lt;= | Checks if the value of left operand is less than or equal value of right operand |
+| < | Checks if the value of left operand is less than value of right operand |
+| => | Checks if the value of left operand is greater than or equal value of right operand |
+| <= | Checks if the value of left operand is less than or equal value of right operand |
 
 ## **Goodii Arithmetic operators**
 
