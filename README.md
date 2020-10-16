@@ -1,4 +1,4 @@
-# JG.TechLearning.LexicalAndSyntaxGenerator# **Goodii Language Specification**
+# Goodii Language Specification
 
 # Contents
 
