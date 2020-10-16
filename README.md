@@ -1,31 +1,5 @@
 # Goodii Language Specification
 
-# Contents
-
-[**Goodii Language Specification** ]
-
-[**Goodii Types** 2](#_Toc53317532)
-
-[**Goodii Loops** 2](#_Toc53317533)
-
-[**Goodii Decision making** 2](#_Toc53317534)
-
-[**Goodii Relational operators** 2](#_Toc53317535)
-
-[**Goodii Arithmetic operators** 2](#_Toc53317536)
-
-[~~**Goodii Logical operators**~~ 3](#_Toc53317537)
-
-[**Goodii keywords / literals** 3](#_Toc53317538)
-
-[**Goodii literals** 3](#_Toc53317539)
-
-[**Goodii Other lexems** 3](#_Toc53317540)
-
-[**Goodii Arrays** 4](#_Toc53317541)
-
-[**Examples** 5](#_Toc53317542)
-
 ## **Goodii Types**
 
 | Name | Description |
