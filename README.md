@@ -37,13 +37,17 @@
 
 ## **Goodii Loops**
 
-| whilii(_ condition _){ _//block of code_ } | whilii can execute a block of code as long as condition is true. |
+| name | description |
 | --- | --- |
+| whilii(_ condition _){ _//block of code_ } | whilii can execute a block of code as long as condition is true. |
+
+
 
 ## **Goodii Decision making**
 
-| **ifii** | Identifies if statement should be run. |
+| name | description |
 | --- | --- |
+| **ifii** | Identifies if statement should be run. |
 | **ifii( __condition__){ ****}**** elsii ****{**** }** | Identifies which statement to run based on value of condition |
 
 ## **Goodii Relational operators**
@@ -57,8 +61,9 @@
 
 ## **Goodii Arithmetic operators**
 
-| **|\*|** | Multiplies both operands |
+| operator | description |
 | --- | --- |
+| **|\*|** | Multiplies both operands |
 | **|/|** | Divides numerator by de-numerator |
 | **|-|** | Substract second operand from the first |
 | **|+|** | Adds two operands |
@@ -78,14 +83,15 @@
 ##
 
 ## **Goodii keywords / literals**
-
-| **returnii** | Finishes the execution. |
+| name | description |
 | --- | --- |
+| **returnii** | Finishes the execution. |
 
 ## **Goodii literals**
 
-| **goodii** | Means that is true |
+| name | description |
 | --- | --- |
+| **goodii** | Means that is true |
 | **badii** | Means that it is false |
 | **nullii** | Null reference, doesn&#39;t refer to any object. |
 
@@ -115,8 +121,9 @@ Declaration of arrays with length = 5.
 
 
 ## **Goodii Input/Output **
-| **Printi(**_ **value as texti** _**)** | Printing **stringii** value to output stream. |
+| name | description |
 | --- | --- |
+| **Printi(**_ **value as texti** _**)** | Printing **stringii** value to output stream. |
 | **Printi** _**(value as intii)**_ | Printing **intii** value to output stream. |
 | **Input** _**(value as stringii)**_ | Reading **stringii** value from input stream and returns **stringii**. |
 | **Input** _**(value as intii)**_ | Reading **intii** value from input stream and returns **intii**. |
