@@ -11,29 +11,20 @@ void sendToOutputStream(char *);
 
 %%
 intii					{ 
-							yylval.textValue = strdup("int");
 							return INT;
 						} 
 dublii					{ 
-							yylval.textValue = strdup("double");
 							return DOUBLE;
 						}
 stringii				{ 
-							yylval.textValue = strdup("string");
 							return STRINGI;
 						}
 boolii					{ 
-							yylval.textValue = strdup("bool");
 							return BOOLEAN;
 						}
-\+						{ 
-							yylval.textValue = strdup("+");
-							return ADD_OPERATOR; 
-						}
-\=						{ 
-							yylval.textValue = strdup("=");
-							return ASSIGNMENT_OPERATOR; 
-						}
+\+						{ return '+'; }
+\=						{ return '=';  }
+;						{ return ';'; }
 [A-Za-z_][A-Za-z0-9_]*	{ 
 							yylval.textValue = strdup(yytext);
 							return TEXT;
@@ -47,10 +38,6 @@ boolii					{
 							return VALUE_DECIMAL;
 						}		
 [ \t]					{;}
-;						{
-							yylval.textValue = strdup(";");
-							return SEMICOLON;
-						}
 [\n]					{  yylineno++; }
 .						{ yyerror("LEX::Lexical error....\n");}
 %%

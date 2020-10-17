@@ -27,7 +27,7 @@ void printInfo(std::string newText);
 };
 
 /** Tokens **/
-%nterm<textValue> typeName var semiColon assignment declaration expression components elementCmp;
+
 %start program;
 
 %right '='
@@ -36,29 +36,30 @@ void printInfo(std::string newText);
 
 %token<integerValue> NUMBER;
 %token<textValue> TEXT;
-%token<textValue> INT;
-%token<textValue> DOUBLE;
-%token<textValue> STRINGI;
-%token<textValue> SEMICOLON;
-%token<textValue> VAR;
-%token<textValue> BOOLEAN;
-%token<textValue> VALUE_INTEGER;
-%token<textValue> VALUE_DECIMAL;
-%token<textValue> MEQ;
-%token<textValue> LEQ;
-%token<textValue> NEQ;
-%token<textValue> EQ;
-%token<textValue> EXPRESSION;
-%token<textValue> COMPONENTS;
-%token<textValue> ELEMENT;
-%token<textValue> ASSIGNMENT_OPERATOR;
-%token<textValue> ADD_OPERATOR;
+%token INT;
+%token DOUBLE;
+%token STRINGI;
+%token SEMICOLON;
+%token VAR;
+%token BOOLEAN;
+%token VALUE_INTEGER;
+%token VALUE_DECIMAL;
+%token MEQ;
+%token LEQ;
+%token NEQ;
+%token EQ;
+%token EXPRESSION;
+%token COMPONENTS;
+%token ELEMENT;
+%token ASSIGNMENT_OPERATOR;
+%token ADD_OPERATOR;
+
 /** Rules Definition **/
 %%
 
 program:
-       line 
-     | program line
+       line         { printf("linia\n");}
+     | program line { printf("linia z programu\n"); }
      ;
 
 line:
@@ -69,21 +70,12 @@ line:
      ;
      
 assignment:
-	 typeName var ASSIGNMENT_OPERATOR semiColon { 
-                                                  appendToOutputFile(std::string($1), false); 
-                                                  appendToOutputFile(std::string($2), false); 
-                                                  appendToOutputFile(std::string("="), false); 
-                                                  appendToOutputFile(std::string($4), false); 
-                                                   }
+	 typeName var '=' elementCmp { printf("Rozpoznano przypisanie.\n");  }
 	;
 
 declaration:
-     typeName var semiColon
-                          { 
-                              appendToOutputFile(std::string($1), false); 
-                              appendToOutputFile(std::string($2), true); 
-                              appendToOutputFile(std::string($3), true); 
-                           }
+     typeName var ';'
+                          { printf("Rozpoznano deklaracje.\n"); }
      ;
 
 
@@ -104,19 +96,20 @@ typeName:
       ;
 
 expression:
-       COMPONENTS ADD_OPERATOR EXPRESSION
-	| COMPONENTS '-' EXPRESSION
-	| COMPONENTS
+       components '+' expression
+	| components '-' expression
+	| components
 	;
+
 components:
-	  COMPONENTS '*' elementCmp
-	| COMPONENTS '/' elementCmp
+	  components '*' elementCmp
+	| components '/' elementCmp
 	| elementCmp
 	;
 
 elementCmp:
-	  VALUE_INTEGER			{  appendToOutputFile(std::string($1), false);}
-	| VALUE_DECIMAL			{  appendToOutputFile(std::string($1), false); }
+	  VALUE_INTEGER			{  printf("Rozpoznano wartosc calkowita\n"); }
+	| VALUE_DECIMAL			{  printf("Rozpoznano wartosc zmiennoprzecinkowa\n");  }
 	;
 
 %%
