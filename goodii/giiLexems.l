@@ -23,6 +23,7 @@ boolii					{
 							return BOOLEAN;
 						}
 \+						{ return '+'; }
+\-						{ return '-'; }
 \=						{ return '='; }
 \/						{ return '/'; }
 \*						{ return '*'; }

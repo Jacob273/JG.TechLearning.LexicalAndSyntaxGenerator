@@ -28,7 +28,7 @@ void printInfo(std::string newText);
 
 /** Tokens **/
 
-%start program;
+%start lines;
 
 %right '='
 %left '+' '-'
@@ -57,9 +57,9 @@ void printInfo(std::string newText);
 /** Rules Definition **/
 %%
 
-program:
-       line         { printf("linia\n");}
-     | program line { printf("linia z programu\n"); }
+lines:
+       line ';'         { printf("linia\n");}
+     | lines line  { printf("wiele linii\n"); }
      ;
 
 line:
@@ -70,8 +70,8 @@ line:
      ;
      
 assignment:
-	      typeName var '=' elementCmp { printf("Rozpoznano przypisanie.\n");  }
-      | 	 typeName var '=' expression { printf("Rozpoznano przypisanie.\n");  }
+	      typeName var '=' elementCmp { printf("Rozpoznano przypisanie proste.\n");  }
+      | 	 typeName var '=' expression { printf("Rozpoznano przypisanie zlozone.\n");  }
 	;
 
 declaration:
