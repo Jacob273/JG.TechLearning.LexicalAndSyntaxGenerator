@@ -59,7 +59,7 @@ void printInfo(std::string newText);
 
 lines:
        line ';'         { printf("linia\n");}
-     | lines line  { printf("wiele linii\n"); }
+     | lines line ';'   { printf("wiele linii\n"); }
      ;
 
 line:
