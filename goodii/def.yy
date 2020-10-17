@@ -74,36 +74,31 @@ assignment:
 	;
 
 declaration:
-     typeName var ';'
-                          { printf("Rozpoznano deklaracje.\n"); }
+     typeName var ';' { printf("Rozpoznano deklaracje.\n"); }
      ;
 
-
-semiColon:
-     SEMICOLON
-     ;
 
 var:
-     TEXT
+     TEXT printf("Rozpoznano text int\n"); }
      ;
 
 
 typeName:
-       INT
-     | DOUBLE
-     | STRINGI
-     | BOOLEAN
+       INT {  printf("Rozpoznano typ int\n"); }
+     | DOUBLE {  printf("Rozpoznano typ double\n"); }
+     | STRINGI {  printf("Rozpoznano typ string\n"); }
+     | BOOLEAN {  printf("Rozpoznano typ bool\n"); }
       ;
 
 expression:
-       components '+' expression
-	| components '-' expression
+       components '+' expression {  printf("Rozpoznano dodawanie\n"); }
+	| components '-' expression {  printf("Rozpoznano odejmowanie\n"); }
 	| components
 	;
 
 components:
-	  components '*' elementCmp
-	| components '/' elementCmp
+	  components '*' elementCmp {  printf("Rozpoznano mnozenie\n"); }
+	| components '/' elementCmp {  printf("Rozpoznano dzielenie\n"); }
 	| elementCmp
 	;
 

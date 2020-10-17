@@ -23,7 +23,9 @@ boolii					{
 							return BOOLEAN;
 						}
 \+						{ return '+'; }
-\=						{ return '=';  }
+\=						{ return '='; }
+\/						{ return '/'; }
+\*						{ return '*'; }
 ;						{ return ';'; }
 [A-Za-z_][A-Za-z0-9_]*	{ 
 							yylval.textValue = strdup(yytext);
