@@ -34,7 +34,6 @@ boolii					{
 							yylval.textValue = strdup("=");
 							return ASSIGNMENT_OPERATOR; 
 						}
-[1-9][0-9]*				{ sendToOutputStream(yytext); }	
 [A-Za-z_][A-Za-z0-9_]*	{ 
 							yylval.textValue = strdup(yytext);
 							return TEXT;
