@@ -1,0 +1,4 @@
+intii a = 300 + 300;
+intii b = 600 - 700;
+intii c = 300 * 300;
+intii d = 900 / 900;
