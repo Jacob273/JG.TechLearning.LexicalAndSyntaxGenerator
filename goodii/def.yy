@@ -70,7 +70,8 @@ line:
      ;
      
 assignment:
-	 typeName var '=' elementCmp { printf("Rozpoznano przypisanie.\n");  }
+	      typeName var '=' elementCmp { printf("Rozpoznano przypisanie.\n");  }
+      | 	 typeName var '=' expression { printf("Rozpoznano przypisanie.\n");  }
 	;
 
 declaration:
@@ -79,7 +80,7 @@ declaration:
 
 
 var:
-     TEXT printf("Rozpoznano text int\n"); }
+     TEXT { printf("Rozpoznano text\n"); }
      ;
 
 
@@ -99,7 +100,7 @@ expression:
 components:
 	  components '*' elementCmp {  printf("Rozpoznano mnozenie\n"); }
 	| components '/' elementCmp {  printf("Rozpoznano dzielenie\n"); }
-	| elementCmp
+	| elementCmp                 {  printf("(konkretnaWartosc)\n"); }
 	;
 
 elementCmp:
