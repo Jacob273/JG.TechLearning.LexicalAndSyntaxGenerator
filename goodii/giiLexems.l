@@ -10,18 +10,10 @@ void sendToOutputStream(char *);
 %}
 
 %%
-intii					{ 
-							return INT;
-						} 
-dublii					{ 
-							return DOUBLE;
-						}
-stringii				{ 
-							return STRINGI;
-						}
-boolii					{ 
-							return BOOLEAN;
-						}
+intii					{ return INT; } 
+dublii					{ return DOUBLE; }
+stringii				{ return STRINGI; }
+boolii					{ return BOOLEAN; }
 \+						{ return '+'; }
 \-						{ return '-'; }
 \=						{ return '='; }

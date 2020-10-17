@@ -85,8 +85,8 @@ var:
 
 
 typeName:
-       INT {  printf("Rozpoznano typ int\n"); }
-     | DOUBLE {  printf("Rozpoznano typ double\n"); }
+       INT     {  printf("Rozpoznano typ int\n"); }
+     | DOUBLE  {  printf("Rozpoznano typ double\n"); }
      | STRINGI {  printf("Rozpoznano typ string\n"); }
      | BOOLEAN {  printf("Rozpoznano typ bool\n"); }
       ;
@@ -98,8 +98,8 @@ expression:
 	;
 
 components:
-	  components '*' elementCmp {  printf("Rozpoznano mnozenie\n"); }
-	| components '/' elementCmp {  printf("Rozpoznano dzielenie\n"); }
+	  components '*' elementCmp  {  printf("Rozpoznano mnozenie\n"); }
+	| components '/' elementCmp  {  printf("Rozpoznano dzielenie\n"); }
 	| elementCmp                 {  printf("(konkretnaWartosc)\n"); }
 	;
 
