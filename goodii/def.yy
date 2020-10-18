@@ -1,5 +1,4 @@
 %{
-     #include <iostream>
      #include <stdbool.h>
      #include <stdio.h>
      #include <stdlib.h>
@@ -16,97 +15,64 @@
 %{
 void appendToOutputFile(std::string newText, bool addSpace);
 bool removeFile(std::string path);
-void printInfo(std::string newText);
 %}
 
 %union 
 {
 	char *textValue;
 	int	integerValue;
-     double decimalValue;
 };
 
 /** Tokens **/
-
-%start lines;
+%nterm<textValue> typeName var semiColon newLine;
+%start program;
 
 %right '='
 %left '+' '-'
 %left '*'
 
-%token<integerValue> NUMBER;
 %token<textValue> TEXT;
-%token INT;
-%token DOUBLE;
-%token STRINGI;
-%token SEMICOLON;
-%token VAR;
-%token BOOLEAN;
-%token VALUE_INTEGER;
-%token VALUE_DECIMAL;
-%token MEQ;
-%token LEQ;
-%token NEQ;
-%token EQ;
-%token EXPRESSION;
-%token COMPONENTS;
-%token ELEMENT;
-%token ASSIGNMENT_OPERATOR;
-%token ADD_OPERATOR;
+%token<integerValue> NUMBER;
+%token<textValue> INT;
+%token<textValue> DOUBLE;
+%token<textValue> SEMICOLON;
+%token<textValue> VAR;
+%token<textValue> NEWLINE;
 
 /** Rules Definition **/
 %%
 
-lines:
-       line ';'         { printf("linia\n");}
-     | lines line ';'   { printf("wiele linii\n"); }
+program:
+     expression newLine expression 
      ;
 
-line:
-       declaration
-     | declaration line 
-     | assignment
-     | assignment line
-     ;
-     
-assignment:
-	      typeName var '=' elementCmp { printf("Rozpoznano przypisanie proste.\n");  }
-      | 	 typeName var '=' expression { printf("Rozpoznano przypisanie zlozone.\n");  }
-	;
-
-declaration:
-     typeName var ';' { printf("Rozpoznano deklaracje.\n"); }
+expression:
+     typeName var semiColon
+                          { 
+                              appendToOutputFile(std::string($1), false); 
+                              appendToOutputFile(std::string($2), true); 
+                              appendToOutputFile(std::string($3), false);
+                           }
      ;
 
+newLine:
+     NEWLINE {  appendToOutputFile(std::string($1), false); }
+
+semiColon:
+     SEMICOLON
+     ;
 
 var:
-     TEXT { printf("Rozpoznano text\n"); }
+     TEXT 
      ;
 
 
 typeName:
-       INT     {  printf("Rozpoznano typ int\n"); }
-     | DOUBLE  {  printf("Rozpoznano typ double\n"); }
-     | STRINGI {  printf("Rozpoznano typ string\n"); }
-     | BOOLEAN {  printf("Rozpoznano typ bool\n"); }
+       INT
+     | DOUBLE
       ;
 
-expression:
-       components '+' expression {  printf("Rozpoznano dodawanie\n"); }
-	| components '-' expression {  printf("Rozpoznano odejmowanie\n"); }
-	| components
-	;
 
-components:
-	  components '*' elementCmp  {  printf("Rozpoznano mnozenie\n"); }
-	| components '/' elementCmp  {  printf("Rozpoznano dzielenie\n"); }
-	| elementCmp                 {  printf("(konkretnaWartosc)\n"); }
-	;
-
-elementCmp:
-	  VALUE_INTEGER			{  printf("Rozpoznano wartosc calkowita\n"); }
-	| VALUE_DECIMAL			{  printf("Rozpoznano wartosc zmiennoprzecinkowa\n");  }
-	;
 
 %%
 
@@ -126,11 +92,17 @@ int main (int argc, char *argv[])
           fputs("Error occured while parsing.", stdout);
      }
 
+     for(int i = 0 ; i < goodiiCode.size(); i++)
+     {
+          printf("vector: %d = %s ", i, goodiiCode.at(i).c_str());
+     }
+
      return parsingResult;
 }
 
 
 void appendToOutputFile(std::string newText, bool includeSpace){
+
      if(firstTimeExecution)
      {
           if(removeFile(outputFileName.c_str()))
@@ -139,7 +111,8 @@ void appendToOutputFile(std::string newText, bool includeSpace){
                firstTimeExecution = false;
           }
      }
-     printInfo(newText); 
+     goodiiCode.push_back(newText);
+     printf("Appending text to a file: <<%s>>\n", newText.c_str());
      FILE *pFile;
      pFile = fopen(outputFileName.c_str(), "a");
      std::string argumentTypeText = includeSpace == true ? " %s" : "%s";
@@ -151,13 +124,6 @@ bool removeFile(std::string path){
      return remove(path.c_str()) == 0;
 }
 
-void printInfo(std::string newText){
-     if(newText == "\n")
-     {
-          newText = "NEWLINE";
-     }
-     std::cout << "Appending text to a file:<" << newText <<">" << "\n";
-}
 
 /** Documentation
 ==================================================================================================
@@ -175,5 +141,10 @@ void printInfo(std::string newText){
      x with y first or by grouping y with z first.
 ==================================================================================================
 
+     | NUMBER  { 
+                 char bufferForString[100];
+                 sprintf(bufferForString, "%d", $1);
+                 $$ = bufferForString; 
+               }
 
 **/
