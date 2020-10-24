@@ -19,7 +19,7 @@ boolii					{ return BOOLEAN; }
 \=						{ return '='; }
 \/						{ return '/'; }
 \*						{ return '*'; }
-;						{ return ';'; }
+\;						{ return ';'; }
 "ifi"					{ return IF;      } 
 "elsi"					{ return ELSE;    }
 "whili"					{ return WHILE;   }  
@@ -49,7 +49,7 @@ boolii					{ return BOOLEAN; }
 							return VALUE_DECIMAL;
 						}		
 [ \t]					{;}
-[\n]					{  yylineno++; }
+[\r][\n]					{  yylineno++; }
 .						{ yyerror("LEX::Lexical error....\n");}
 %%
 
