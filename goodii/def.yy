@@ -39,7 +39,7 @@ void printInfo(std::string newText);
 %token INT DOUBLE STRINGI BOOLEAN;
 %token IF ELSE WHILE RETURN;
 %token READ PRINT;
-%token VAR TRUE FALSE COMMENT;
+%token TRUE FALSE COMMENT;
 
 %token VALUE_INTEGER;
 %token VALUE_DECIMAL;
@@ -59,18 +59,13 @@ line:
      ;
      
 assignment:
-	      typeName var '=' elementCmp ';' { printf("Syntax-Recognized: przypisanie proste.\n");  }
-      | 	 typeName var '=' expression ';' { printf("Syntax-Recognized: przypisanie zlozone.\n");  }
+	      typeName elementCmp '=' elementCmp ';' { printf("Syntax-Recognized: przypisanie proste.\n");  }
+      | 	 typeName elementCmp '=' expression ';' { printf("Syntax-Recognized: przypisanie zlozone.\n");  }
 	;
 
 declaration:
-     typeName var ';' { printf("Syntax-Recognized: deklaracja\n"); }
+     typeName elementCmp ';' { printf("Syntax-Recognized: deklaracja\n"); }
      ;
-
-var:
-     TEXT { printf("Syntax-Recognized: text\n"); }
-     ;
-
 
 typeName:
        INT    {  printf("Syntax-Recognized: typ int\n"); }
@@ -94,6 +89,7 @@ components:
 elementCmp:
 	  VALUE_INTEGER			{  printf("Syntax-Recognized: wartosc calkowita\n"); }
 	| VALUE_DECIMAL			{  printf("Syntax-Recognized: wartosc zmiennoprzecinkowa\n");  }
+     | TEXT                        { printf("Syntax-Recognized: text-zmn\n"); }
 	;
 
 %%
