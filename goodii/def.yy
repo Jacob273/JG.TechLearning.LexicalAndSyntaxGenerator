@@ -1,4 +1,5 @@
 %{
+     #include <iostream>
      #include <stdbool.h>
      #include <stdio.h>
      #include <stdlib.h>
@@ -15,64 +16,96 @@
 %{
 void appendToOutputFile(std::string newText, bool addSpace);
 bool removeFile(std::string path);
+void printInfo(std::string newText);
 %}
 
 %union 
 {
 	char *textValue;
 	int	integerValue;
+     double decimalValue;
 };
 
 /** Tokens **/
-%nterm<textValue> typeName var semiColon newLine;
-%start program;
 
+%start lines;
 %right '='
 %left '+' '-'
 %left '*'
 
-%token<textValue> TEXT;
+
 %token<integerValue> NUMBER;
-%token<textValue> INT;
-%token<textValue> DOUBLE;
-%token<textValue> SEMICOLON;
-%token<textValue> VAR;
-%token<textValue> NEWLINE;
+%token<textValue> TEXT;
+%token INT;
+%token DOUBLE;
+%token STRINGI;
+%token VAR;
+%token BOOLEAN;
+%token IF;
+%token ELSE;
+%token WHILE;
+%token PRINT;
+%token READ;
+%token RETURN;
+%token TRUE;
+%token FALSE;
+%token COMMENT;
+%token VALUE_INTEGER;
+%token VALUE_DECIMAL;
 
 /** Rules Definition **/
 %%
 
-program:
-     expression newLine expression 
+lines:
+       line ';'         { printf("Syntax-Recognized: linia\n");}
+     | lines line ';'   { printf("Syntax-Recognized: wiele linii\n"); }
      ;
 
-expression:
-     typeName var semiColon
-                          { 
-                              appendToOutputFile(std::string($1), false); 
-                              appendToOutputFile(std::string($2), true); 
-                              appendToOutputFile(std::string($3), false);
-                           }
+line:
+       declaration
+     | declaration line 
+     | assignment
+     | assignment line
+     ;
+     
+assignment:
+	      typeName var '=' elementCmp { printf("Syntax-Recognized: przypisanie proste.\n");  }
+      | 	 typeName var '=' expression { printf("Syntax-Recognized: przypisanie zlozone.\n");  }
+	;
+
+declaration:
+     typeName var ';' { printf("Syntax-Recognized: deklaracje.\n"); }
      ;
 
-newLine:
-     NEWLINE {  appendToOutputFile(std::string($1), false); }
-
-semiColon:
-     SEMICOLON
-     ;
 
 var:
-     TEXT 
+     TEXT { printf("Syntax-Recognized: text\n"); }
      ;
 
 
 typeName:
-       INT
-     | DOUBLE
+       INT    {  printf("Syntax-Recognized: typ int\n"); }
+     | DOUBLE {  printf("Syntax-Recognized: typ double\n"); }
+     | STRINGI {  printf("Syntax-Recognized: typ string\n"); }
+     | BOOLEAN {  printf("Syntax-Recognized: typ bool\n"); }
       ;
 
+expression:
+       components '+' expression {  printf("Syntax-Recognized: dodawanie\n"); }
+	| components '-' expression {  printf("Syntax-Recognized: odejmowanie\n"); }
+	| components
+	;
 
+components:
+	  components '*' elementCmp {  printf("Syntax-Recognized: mnozenie\n"); }
+	| components '/' elementCmp {  printf("Syntax-Recognized: dzielenie\n"); }
+	| elementCmp                 {  printf("(konkretnaWartosc)\n"); }
+	;
+
+elementCmp:
+	  VALUE_INTEGER			{  printf("Syntax-Recognized: wartosc calkowita\n"); }
+	| VALUE_DECIMAL			{  printf("Syntax-Recognized: wartosc zmiennoprzecinkowa\n");  }
+	;
 
 %%
 
@@ -82,6 +115,7 @@ std::vector<std::string> goodiiCode;
 
 int main (int argc, char *argv[]) 
 {
+     /** glowna petla odpytujaca analizator leksykalny yyparse()**/
      int parsingResult = yyparse();
      if(parsingResult == 0)
      {
@@ -90,11 +124,6 @@ int main (int argc, char *argv[])
      else
      {
           fputs("Error occured while parsing.", stdout);
-     }
-
-     for(int i = 0 ; i < goodiiCode.size(); i++)
-     {
-          printf("vector: %d = %s ", i, goodiiCode.at(i).c_str());
      }
 
      return parsingResult;
@@ -111,8 +140,7 @@ void appendToOutputFile(std::string newText, bool includeSpace){
                firstTimeExecution = false;
           }
      }
-     goodiiCode.push_back(newText);
-     printf("Appending text to a file: <<%s>>\n", newText.c_str());
+     printInfo(newText); 
      FILE *pFile;
      pFile = fopen(outputFileName.c_str(), "a");
      std::string argumentTypeText = includeSpace == true ? " %s" : "%s";
@@ -124,6 +152,13 @@ bool removeFile(std::string path){
      return remove(path.c_str()) == 0;
 }
 
+void printInfo(std::string newText){
+     if(newText == "\n")
+     {
+          newText = "NEWLINE";
+     }
+     std::cout << "Appending text to a file:<" << newText <<">" << "\n";
+}
 
 /** Documentation
 ==================================================================================================
@@ -141,10 +176,5 @@ bool removeFile(std::string path){
      x with y first or by grouping y with z first.
 ==================================================================================================
 
-     | NUMBER  { 
-                 char bufferForString[100];
-                 sprintf(bufferForString, "%d", $1);
-                 $$ = bufferForString; 
-               }
 
 **/

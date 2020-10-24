@@ -37,17 +37,14 @@ boolii					{ return BOOLEAN; }
 \"						{ return '"';     }
 \]						{ return ']';     }
 [A-Za-z_][A-Za-z0-9_]*	{ 
-							fprintf(yyout, "Lex recognized: Name \n");
 							yylval.textValue = strdup(yytext);
 							return TEXT;
 						}
 [1-9][0-9]*|0			{
-							fprintf(yyout, "Lex recognized: integer value \n");
 							yylval.integerValue = atoi(yytext);
 							return VALUE_INTEGER;
 						}
 ([1-9][0-9]*|0)\.[0-9]+ {
-							fprintf(yyout, "Lex recognized: decimal value \n");
 							yylval.decimalValue = atof(yytext);
 							return VALUE_DECIMAL;
 						}		
@@ -66,7 +63,3 @@ int yyerror(char *msg,...)
 	printf("%d: %s", yylineno, msg);
 	exit(1);
 }
-
-
-
-1c036cf
