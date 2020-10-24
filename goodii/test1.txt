@@ -1,4 +1,0 @@
-intii a;
-dublii b;
-stringii c;
-
