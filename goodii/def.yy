@@ -36,20 +36,11 @@ void printInfo(std::string newText);
 
 %token<integerValue> NUMBER;
 %token<textValue> TEXT;
-%token INT;
-%token DOUBLE;
-%token STRINGI;
-%token VAR;
-%token BOOLEAN;
-%token IF;
-%token ELSE;
-%token WHILE;
-%token PRINT;
-%token READ;
-%token RETURN;
-%token TRUE;
-%token FALSE;
-%token COMMENT;
+%token INT DOUBLE STRINGI BOOLEAN;
+%token IF ELSE WHILE RETURN;
+%token READ PRINT;
+%token VAR TRUE FALSE COMMENT;
+
 %token VALUE_INTEGER;
 %token VALUE_DECIMAL;
 
@@ -57,26 +48,25 @@ void printInfo(std::string newText);
 %%
 
 lines:
-       line ';'         { printf("Syntax-Recognized: linia\n");}
-     | lines line ';'   { printf("Syntax-Recognized: wiele linii\n"); }
+       line        { printf("Syntax-Recognized: linia\n");}
+     | lines line   { printf("Syntax-Recognized: wiele linii\n"); }
      ;
 
 line:
        declaration
-     | declaration line 
      | assignment
+     | declaration line
      | assignment line
      ;
      
 assignment:
-	      typeName var '=' elementCmp { printf("Syntax-Recognized: przypisanie proste.\n");  }
-      | 	 typeName var '=' expression { printf("Syntax-Recognized: przypisanie zlozone.\n");  }
+	      typeName var '=' elementCmp ';' { printf("Syntax-Recognized: przypisanie proste.\n");  }
+      | 	 typeName var '=' expression ';' { printf("Syntax-Recognized: przypisanie zlozone.\n");  }
 	;
 
 declaration:
-     typeName var ';' { printf("Syntax-Recognized: deklaracje.\n"); }
+     typeName var ';' { printf("Syntax-Recognized: deklaracja.\n"); }
      ;
-
 
 var:
      TEXT { printf("Syntax-Recognized: text\n"); }
