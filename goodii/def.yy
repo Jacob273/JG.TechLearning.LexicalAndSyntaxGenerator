@@ -33,7 +33,7 @@ void printInfo(std::string newText);
 %left '+' '-'
 %left '*'
 
-
+/** Tokens **/
 %token<integerValue> NUMBER;
 %token<textValue> TEXT;
 %token INT DOUBLE STRINGI BOOLEAN;
@@ -44,19 +44,18 @@ void printInfo(std::string newText);
 %token VALUE_INTEGER;
 %token VALUE_DECIMAL;
 
-/** Rules Definition **/
+/** Syntax rules definition **/
 %%
 
+
 lines:
-       line        { printf("Syntax-Recognized: linia\n");}
+       line
      | lines line   { printf("Syntax-Recognized: wiele linii\n"); }
      ;
 
 line:
-       declaration
-     | assignment
-     | declaration line
-     | assignment line
+       declaration  { printf("Syntax-Recognized: linia deklaracji\n");}
+     | assignment  { printf("Syntax-Recognized: linia przypisania\n");}
      ;
      
 assignment:
@@ -65,7 +64,7 @@ assignment:
 	;
 
 declaration:
-     typeName var ';' { printf("Syntax-Recognized: deklaracja.\n"); }
+     typeName var ';' { printf("Syntax-Recognized: deklaracja\n"); }
      ;
 
 var:
