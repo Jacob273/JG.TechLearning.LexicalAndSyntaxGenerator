@@ -40,6 +40,7 @@ void printInfo(std::string newText);
 %token IF ELSE WHILE RETURN;
 %token READ PRINT;
 %token TRUE FALSE COMMENT;
+%token EQ NEQ GEQ LEQ;
 
 %token VALUE_INTEGER;
 %token VALUE_DECIMAL;

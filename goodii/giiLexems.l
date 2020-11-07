@@ -36,6 +36,14 @@ boolii					{ return BOOLEAN; }
 \}						{ return '}';     }
 \"						{ return '"';     }
 \]						{ return ']';     }
+
+\/\/					{ return COMMENT;}
+
+\=\=					{ return EQ;}
+\>\=					{ return GEQ;}
+\<\=					{ return LEQ;}
+\!\=					{ return NEQ;}
+
 [A-Za-z_][A-Za-z0-9_]*	{ 
 							yylval.textValue = strdup(yytext);
 							return TEXT;
