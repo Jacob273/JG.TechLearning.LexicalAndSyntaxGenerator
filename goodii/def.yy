@@ -5,6 +5,7 @@
      #include <stdlib.h>
      #include <string>
      #include <vector>
+     #include <stack>
      extern "C" int yylex();
      extern "C" int yyerror(const char *msg, ...);
 	#define INFILE_ERROR 1
@@ -14,9 +15,69 @@
 %}
 
 %{
-void appendToOutputFile(std::string newText, bool addSpace);
-bool removeFile(std::string path);
-void printInfo(std::string newText);
+
+class FileAppender{
+
+     private:
+          std::string _outputFileName;
+     public:
+          FileAppender(std::string outputFileName){
+               _outputFileName = outputFileName;
+          }
+
+          bool clean()
+          {
+               return remove(_outputFileName.c_str()) == 0;
+          }
+
+          void append(std::string newText, bool includeSpace)
+          {
+               FILE *pFile;
+               pFile = fopen(_outputFileName.c_str(), "a");
+               std::string argumentTypeText = includeSpace == true ? " %s" : "%s";
+               fprintf(pFile, argumentTypeText.c_str(), newText.c_str());  
+               fclose(pFile);
+          }
+};
+
+enum LexemType
+{
+    Txt,
+    Integer,
+    Double
+};
+
+class TextElement
+{
+	public:
+		LexemType type; // lexem type 
+		std::string _value; //could be integer: 1 or double 1.0 or literal?
+
+
+     TextElement(LexemType type, std::string value)
+     {
+          _value = value;
+     }
+};
+
+class GrammaBuilder 
+{
+     private:
+     std::stack<TextElement*> *_stack;
+
+     public:
+
+     GrammaBuilder(){
+          _stack = new std::stack<TextElement*>();
+     }
+
+
+     void Push(TextElement *element)
+     {
+          _stack->push(element);
+     }
+};
+
 %}
 
 %union 
@@ -95,12 +156,19 @@ elementCmp:
 
 %%
 
-bool firstTimeExecution = true;
-std::string outputFileName = "output_goodii.txt";
-std::vector<std::string> goodiiCode;
+FileAppender *fileAppender = new FileAppender("output_goodii.txt");
+GrammaBuilder *builder = new GrammaBuilder();
 
 int main (int argc, char *argv[]) 
 {
+     fileAppender->clean();
+     fileAppender->append("HEADER FILE", false);
+     builder->Push(new TextElement(LexemType::Txt, "33"));
+     builder->Push(new TextElement(LexemType::Txt, "55"));
+     builder->Push(new TextElement(LexemType::Txt, "88"));
+
+     //TODO: zrzucic stack do trojki
+
      /** glowna petla odpytujaca analizator leksykalny yyparse()**/
      int parsingResult = yyparse();
      if(parsingResult == 0)
@@ -115,36 +183,6 @@ int main (int argc, char *argv[])
      return parsingResult;
 }
 
-
-void appendToOutputFile(std::string newText, bool includeSpace){
-
-     if(firstTimeExecution)
-     {
-          if(removeFile(outputFileName.c_str()))
-          {
-               printf("Deleted output file...\n");
-               firstTimeExecution = false;
-          }
-     }
-     printInfo(newText); 
-     FILE *pFile;
-     pFile = fopen(outputFileName.c_str(), "a");
-     std::string argumentTypeText = includeSpace == true ? " %s" : "%s";
-     fprintf(pFile, argumentTypeText.c_str(), newText.c_str());  
-     fclose(pFile);
-}
-
-bool removeFile(std::string path){
-     return remove(path.c_str()) == 0;
-}
-
-void printInfo(std::string newText){
-     if(newText == "\n")
-     {
-          newText = "NEWLINE";
-     }
-     std::cout << "Appending text to a file:<" << newText <<">" << "\n";
-}
 
 /** Documentation
 ==================================================================================================
