@@ -167,21 +167,6 @@ int main (int argc, char *argv[])
      builder->Push(new TextElement(LexemType::Txt, "55"));
      builder->Push(new TextElement(LexemType::Txt, "88"));
 
-     //TODO: Zadanie: zrzucic stack do trojki
-     // 1 + 2 * 5                       wyrazenie wejsciowe
-     
-     // rpn.txt 1 2 5 * +               zapis wyrazenia wejsciowego w odwrotnej notacji polskiej
-     
-     // threes.txt tmp 1 2 +            plik trójkowy
-     // tmp1 = 2 * 5
-     // tmp2 = 1 tmp1 
-     
-     // **kod wyjsciowy**
-     // li $t0, 1
-     // li $t1, 2
-     // add $t0, $t0, $t1
-     // sw $t1, tmp
-
      /** glowna petla odpytujaca analizator leksykalny yyparse()**/
      int parsingResult = yyparse();
      if(parsingResult == 0)
@@ -213,5 +198,20 @@ int main (int argc, char *argv[])
      x with y first or by grouping y with z first.
 ==================================================================================================
 
+
+     //Zadanie: zrzucic stack do trojki
+     // 1 + 2 * 5                       wyrazenie wejsciowe
+     
+     // rpn.txt 1 2 5 * +               zapis wyrazenia wejsciowego w odwrotnej notacji polskiej
+     
+     // threes.txt tmp 1 2 +            plik trójkowy
+     // tmp1 = 2 * 5
+     // tmp2 = 1 tmp1 
+     
+     // **kod wyjsciowy**
+     // li $t0, 1
+     // li $t1, 2
+     // add $t0, $t0, $t1
+     // sw $t1, tmp
 
 **/
