@@ -25,7 +25,7 @@ class FileAppender{
                _outputFileName = outputFileName;
           }
 
-          bool clean()
+          bool tryClean()
           {
                return remove(_outputFileName.c_str()) == 0;
           }
@@ -161,13 +161,26 @@ GrammaBuilder *builder = new GrammaBuilder();
 
 int main (int argc, char *argv[]) 
 {
-     fileAppender->clean();
+     fileAppender->tryClean();
      fileAppender->append("HEADER FILE", false);
      builder->Push(new TextElement(LexemType::Txt, "33"));
      builder->Push(new TextElement(LexemType::Txt, "55"));
      builder->Push(new TextElement(LexemType::Txt, "88"));
 
-     //TODO: zrzucic stack do trojki
+     //TODO: Zadanie: zrzucic stack do trojki
+     // 1 + 2 * 5                       wyrazenie wejsciowe
+     
+     // rpn.txt 1 2 5 * +               zapis wyrazenia wejsciowego w odwrotnej notacji polskiej
+     
+     // threes.txt tmp 1 2 +            plik trójkowy
+     // tmp1 = 2 * 5
+     // tmp2 = 1 tmp1 
+     
+     // **kod wyjsciowy**
+     // li $t0, 1
+     // li $t1, 2
+     // add $t0, $t0, $t1
+     // sw $t1, tmp
 
      /** glowna petla odpytujaca analizator leksykalny yyparse()**/
      int parsingResult = yyparse();
