@@ -100,6 +100,9 @@ class GrammaBuilder
 
 };
 
+FileAppender *fileAppender = new FileAppender("output_goodii.txt");
+GrammaBuilder *builder = new GrammaBuilder();
+
 %}
 
 %union 
@@ -117,16 +120,15 @@ class GrammaBuilder
 %left '*'
 
 /** Tokens **/
-%token<integerValue> NUMBER;
-%token<textValue> TEXT;
 %token INT DOUBLE STRINGI BOOLEAN;
 %token IF ELSE WHILE RETURN;
 %token READ PRINT;
 %token TRUE FALSE COMMENT;
 %token EQ NEQ GEQ LEQ;
 
-%token VALUE_INTEGER;
-%token VALUE_DECIMAL;
+%token<textValue> TEXT;
+%token<integerValue> VALUE_INTEGER;
+%token<decimalValue> VALUE_DECIMAL;
 
 /** Syntax rules definition **/
 %%
@@ -171,15 +173,12 @@ components:
 	;
 
 elementCmp:
-	  VALUE_INTEGER			{  printf("Syntax-Recognized: wartosc calkowita\n"); }
-	| VALUE_DECIMAL			{  printf("Syntax-Recognized: wartosc zmiennoprzecinkowa\n");  }
-     | TEXT                        { printf("Syntax-Recognized: text-zmn\n"); }
+	  VALUE_INTEGER			{  printf("Syntax-Recognized: wartosc calkowita\n");          builder->pushOnStack(new TextElement(LexemType::Integer, std::to_string($1))); }
+	| VALUE_DECIMAL			{  printf("Syntax-Recognized: wartosc zmiennoprzecinkowa\n"); builder->pushOnStack(new TextElement(LexemType::Double, std::to_string($1)));  }
+     | TEXT                        {  printf("Syntax-Recognized: text-zmn\n");                   builder->pushOnStack(new TextElement(LexemType::Txt, std::string($1))); }
 	;
 
 %%
-
-FileAppender *fileAppender = new FileAppender("output_goodii.txt");
-GrammaBuilder *builder = new GrammaBuilder();
 
 int main (int argc, char *argv[]) 
 {
