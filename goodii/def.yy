@@ -64,18 +64,40 @@ class GrammaBuilder
 {
      private:
      std::stack<TextElement*> *_stack;
-
+     TextElement *_previousElement;
+     std::vector<std::string>  *_assemblerOutputCode;
+     
      public:
 
      GrammaBuilder(){
           _stack = new std::stack<TextElement*>();
+          _assemblerOutputCode = new std::vector<std::string>();
      }
 
-
-     void Push(TextElement *element)
+     void pushOnStack(TextElement *element)
      {
+          if(_stack->size() > 0)
+          {
+               _previousElement = _stack->top();
+          }
           _stack->push(element);
      }
+
+     std::string buildCommentedTriple(std::string concatenator)
+     {
+          std::string commentedResult;
+          if(_previousElement)
+          {
+               commentedResult = "#" + _previousElement->_value + concatenator + _stack->top()->_value;
+          }
+          else
+          {
+               commentedResult = "#" + concatenator + _stack->top()->_value;
+          }
+          _assemblerOutputCode->push_back(commentedResult);
+          return commentedResult;
+     }
+
 };
 
 %}
@@ -163,9 +185,18 @@ int main (int argc, char *argv[])
 {
      fileAppender->tryClean();
      fileAppender->append("HEADER FILE", false);
-     builder->Push(new TextElement(LexemType::Txt, "33"));
-     builder->Push(new TextElement(LexemType::Txt, "55"));
-     builder->Push(new TextElement(LexemType::Txt, "88"));
+
+     //Test code
+
+     builder->pushOnStack(new TextElement(LexemType::Integer, "1"));
+     builder->pushOnStack(new TextElement(LexemType::Integer, "2"));
+     std::string commentedTriple1 = builder->buildCommentedTriple("+");
+     
+     builder->pushOnStack(new TextElement(LexemType::Integer, "5"));
+     std::string commentedTriple2 = builder->buildCommentedTriple("*");
+
+     fileAppender->append(commentedTriple1, true);
+     fileAppender->append(commentedTriple2, true);
 
      /** glowna petla odpytujaca analizator leksykalny yyparse()**/
      int parsingResult = yyparse();
