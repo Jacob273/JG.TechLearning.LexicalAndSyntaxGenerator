@@ -16,12 +16,14 @@
 
 %{
 
-class FileAppender{
+class FileAppender
+{
 
      private:
           std::string _outputFileName;
      public:
-          FileAppender(std::string outputFileName){
+          FileAppender(std::string outputFileName)
+          {
                _outputFileName = outputFileName;
           }
 
@@ -47,11 +49,28 @@ enum LexemType
     Double
 };
 
+/**
+Klasa służąca do przechowywania:
+-Zmiennych(Txt)-
+-Wartości całkowitych(Integer)
+-Wartości zmiennoprzecinkowych(Double)
+
+np. 
+     'a = 5;'
+to 
+     TextElement.type = Integer;
+     TextElement.value = 5;
+lub
+     'int a;'
+to 
+     TextElement.Txt 
+     TextElement.value = a;
+**/
 class TextElement
 {
 	public:
 		LexemType type; // lexem type 
-		std::string _value; //could be integer: 1 or double 1.0 or literal?
+		std::string _value; //could be integer: 1 or double 1.0 or literal
 
 
      TextElement(LexemType type, std::string value)
@@ -60,42 +79,72 @@ class TextElement
      }
 };
 
+/**
+ Klasa służąca do:
+ a) Zapisywania elementów tekstowych (TextElement) kodu goodii tworzących później gramatykę
+ b) Tworzenia kodu wynikowego assemblera zbudowanego wg. określonych reguł gramatyki
+ c) Tworzenia tablicy symboli
+**/
 class GrammaBuilder 
 {
      private:
-     std::stack<TextElement*> *_stack;
-     TextElement *_previousElement;
+
+     //Przechowuje TextElement'y języka goodii. 
+     //TextElementy mogą być zorganizowane w odpowiedniej kolejności, gdy dochodzi do wykrycia operacji arytmetycznych (triples).
+     std::stack<TextElement*> *_allTextElementsStack;
+
+     TextElement *_beforeTopElement;
      std::vector<std::string>  *_assemblerOutputCode;
+
+     std::string _currResult;
      
-     public:
+
+     TextElement* GetAndRemove()
+     {
+         if (_allTextElementsStack->size() > 0)
+         {
+             TextElement* tmp = _allTextElementsStack->top();
+             _allTextElementsStack->pop();
+             return tmp;
+         }
+         return nullptr;
+     }
+
+public:
 
      GrammaBuilder(){
-          _stack = new std::stack<TextElement*>();
+          _allTextElementsStack = new std::stack<TextElement*>();
           _assemblerOutputCode = new std::vector<std::string>();
      }
 
-     void pushOnStack(TextElement *element)
+     void Push(TextElement *element)
      {
-          if(_stack->size() > 0)
+          if(_allTextElementsStack->size() > 0)
           {
-               _previousElement = _stack->top();
+               _beforeTopElement = _allTextElementsStack->top();
           }
-          _stack->push(element);
+          _allTextElementsStack->push(element);
      }
 
-     std::string buildCommentedTriple(std::string concatenator)
+     std::string BuildCommentFromLastTwo(std::string concatenator)
      {
           std::string commentedResult;
-          if(_previousElement)
+          if(_beforeTopElement)
           {
-               commentedResult = "#" + _previousElement->_value + concatenator + _stack->top()->_value;
+               commentedResult = "#" + _beforeTopElement->_value + concatenator + _allTextElementsStack->top()->_value;
           }
           else
           {
-               commentedResult = "#" + concatenator + _stack->top()->_value;
+               commentedResult = "#" + concatenator + _allTextElementsStack->top()->_value;
           }
           _assemblerOutputCode->push_back(commentedResult);
           return commentedResult;
+     }
+
+     void BuildTriples(std::string text)
+     {
+          TextElement* second = GetAndRemove();
+          TextElement* first = GetAndRemove();
      }
 
 };
@@ -107,7 +156,7 @@ GrammaBuilder *builder = new GrammaBuilder();
 
 %union 
 {
-	char *textValue;
+	char *textIdentifier;
 	int	integerValue;
      double decimalValue;
 };
@@ -126,7 +175,7 @@ GrammaBuilder *builder = new GrammaBuilder();
 %token TRUE FALSE COMMENT;
 %token EQ NEQ GEQ LEQ;
 
-%token<textValue> TEXT;
+%token<textIdentifier> TEXT_IDENTIFIER;
 %token<integerValue> VALUE_INTEGER;
 %token<decimalValue> VALUE_DECIMAL;
 
@@ -173,9 +222,9 @@ components:
 	;
 
 elementCmp:
-	  VALUE_INTEGER			{  printf("Syntax-Recognized: wartosc calkowita\n");          builder->pushOnStack(new TextElement(LexemType::Integer, std::to_string($1))); }
-	| VALUE_DECIMAL			{  printf("Syntax-Recognized: wartosc zmiennoprzecinkowa\n"); builder->pushOnStack(new TextElement(LexemType::Double, std::to_string($1)));  }
-     | TEXT                        {  printf("Syntax-Recognized: text-zmn\n");                   builder->pushOnStack(new TextElement(LexemType::Txt, std::string($1))); }
+	  VALUE_INTEGER			{  printf("Syntax-Recognized: wartosc calkowita\n");          builder->Push(new TextElement(LexemType::Integer, std::to_string($1))); }
+	| VALUE_DECIMAL			{  printf("Syntax-Recognized: wartosc zmiennoprzecinkowa\n"); builder->Push(new TextElement(LexemType::Double, std::to_string($1)));  }
+     | TEXT_IDENTIFIER                        {  printf("Syntax-Recognized: text-zmn\n");                   builder->Push(new TextElement(LexemType::Txt, std::string($1))); }
 	;
 
 %%
@@ -183,16 +232,16 @@ elementCmp:
 int main (int argc, char *argv[]) 
 {
      fileAppender->tryClean();
-     fileAppender->append("HEADER FILE", false);
+     fileAppender->append("HEADER\n", false);
 
-     //Test code
+     //TODO: add symbols as map?
 
-     builder->pushOnStack(new TextElement(LexemType::Integer, "1"));
-     builder->pushOnStack(new TextElement(LexemType::Integer, "2"));
-     std::string commentedTriple1 = builder->buildCommentedTriple("+");
+     builder->Push(new TextElement(LexemType::Integer, "1"));
+     builder->Push(new TextElement(LexemType::Integer, "2"));
+     std::string commentedTriple1 = builder->BuildCommentFromLastTwo("+");
      
-     builder->pushOnStack(new TextElement(LexemType::Integer, "5"));
-     std::string commentedTriple2 = builder->buildCommentedTriple("*");
+     builder->Push(new TextElement(LexemType::Integer, "5"));
+     std::string commentedTriple2 = builder->BuildCommentFromLastTwo("*");
 
      fileAppender->append(commentedTriple1, true);
      fileAppender->append(commentedTriple2, true);
