@@ -16,6 +16,11 @@
 
 %{
 
+namespace Constants
+{
+     std::string Minus = "-";
+}
+
 class FileAppender
 {
 
@@ -110,6 +115,13 @@ class GrammaBuilder
          return nullptr;
      }
 
+     std::string GenerateTripleResult(std::string arithmeticOperator)
+     {
+          TextElement* second = GetAndRemove();
+          TextElement* first = GetAndRemove();
+          return first->_value + arithmeticOperator + second->_value;
+     }
+
 public:
 
      GrammaBuilder(){
@@ -141,10 +153,13 @@ public:
           return commentedResult;
      }
 
-     void BuildTriples(std::string text)
+     void BuildTriples(std::string arithmeticOperator)
      {
-          TextElement* second = GetAndRemove();
-          TextElement* first = GetAndRemove();
+          std::string result = GenerateTripleResult(arithmeticOperator);
+          if(Constants::Minus == "-")
+          {
+
+          }
      }
 
 };
@@ -234,7 +249,7 @@ int main (int argc, char *argv[])
      fileAppender->tryClean();
      fileAppender->append("HEADER\n", false);
 
-     //TODO: add symbols as map?
+     //Test code
 
      builder->Push(new TextElement(LexemType::Integer, "1"));
      builder->Push(new TextElement(LexemType::Integer, "2"));
