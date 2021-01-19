@@ -6,6 +6,8 @@
      #include <string>
      #include <vector>
      #include <stack>
+     #include <map>
+
      extern "C" int yylex();
      extern "C" int yyerror(const char *msg, ...);
 	#define INFILE_ERROR 1
@@ -18,8 +20,26 @@
 
 namespace Constants
 {
-     std::string Minus = "-";
+     std::string Subtraction = "-";
+     std::string Addition = "+";
+     std::string Multiplication = "*";
+     std::string Division = "/";
+     std::string Result = "result";
 }
+
+class UniqueIdGenerator
+{
+
+     static int idCounter;
+
+     public:
+     static int GetNextUnique()
+     {
+          return ++idCounter;
+     }
+};
+
+int UniqueIdGenerator::idCounter = 0;
 
 class FileAppender
 {
@@ -49,9 +69,10 @@ class FileAppender
 
 enum LexemType
 {
-    Txt,
-    Integer,
-    Double
+    Unknown = 0,
+    Txt = 1,
+    Integer = 2,
+    Double = 3
 };
 
 /**
@@ -74,13 +95,19 @@ to
 class TextElement
 {
 	public:
-		LexemType type; // lexem type 
+		LexemType _type; // lexem type 
 		std::string _value; //could be integer: 1 or double 1.0 or literal
 
 
      TextElement(LexemType type, std::string value)
      {
           _value = value;
+          _type = type;
+     }
+
+     std::string GetValueAndTypeAsMessage()
+     {
+          return "<Value:<" + _value + ">" + ",Type:<" + std::to_string(_type) + ">>";
      }
 };
 
@@ -100,9 +127,12 @@ class GrammaBuilder
 
      TextElement *_beforeTopElement;
      std::vector<std::string>  *_assemblerOutputCode;
-
+     std::map<std::string, TextElement*> *_symbols;
      std::string _currResult;
-     
+     std::string _langVersion = "v. 1.0";
+
+     FileAppender *_triplesOutputFileAppender;
+     FileAppender *_assemblerOutputFileAppender;
 
      TextElement* GetAndRemove()
      {
@@ -115,22 +145,58 @@ class GrammaBuilder
          return nullptr;
      }
 
-     std::string GenerateTripleResult(std::string arithmeticOperator)
+     std::string GenerateTripleResultString(std::string arithmeticOperator, TextElement* first, TextElement* second)
      {
-          TextElement* second = GetAndRemove();
-          TextElement* first = GetAndRemove();
           return first->_value + arithmeticOperator + second->_value;
+     }
+
+     std::string GetResultStringWithId()
+     {
+          int nextId = UniqueIdGenerator::GetNextUnique();
+          return Constants::Result + "_" + std::to_string(nextId);
+     }
+
+     bool CheckTypeConsistency(LexemType firstType, LexemType secondType)
+     {
+          return (firstType == LexemType::Double && secondType == LexemType::Double) 
+                 || (firstType == LexemType::Integer && secondType == LexemType::Integer);
      }
 
 public:
 
-     GrammaBuilder(){
+     GrammaBuilder(FileAppender* triplesOutputFileAppender, FileAppender* assemblerOutputFileAppender){
           _allTextElementsStack = new std::stack<TextElement*>();
           _assemblerOutputCode = new std::vector<std::string>();
+          _triplesOutputFileAppender = triplesOutputFileAppender;
+          _assemblerOutputFileAppender = assemblerOutputFileAppender;
+          _symbols = new std::map<std::string, TextElement*>();
+          ResetOutput();
      }
 
-     void Push(TextElement *element)
+     void ResetOutput()
      {
+          _triplesOutputFileAppender->tryClean();
+          _assemblerOutputFileAppender->tryClean();
+     }
+
+     void GenerateAssemblerOutput()
+     {    
+          _assemblerOutputFileAppender->append(".text \n", true);
+          for(int i = 0; i < _assemblerOutputCode->size(); i++)
+          {
+               std::string assemblerLine = _assemblerOutputCode->at(i);
+               _assemblerOutputFileAppender->append(assemblerLine + "\n", true);
+          }
+     }
+
+     void PushGoodiiSymbol()
+     {
+
+     }
+
+     void PushGoodii(TextElement *element)
+     {
+          std::cout << "Debug::Pushing val<" << element->_value << "> type<" << element->_type << "> \n";
           if(_allTextElementsStack->size() > 0)
           {
                _beforeTopElement = _allTextElementsStack->top();
@@ -155,17 +221,114 @@ public:
 
      void BuildTriples(std::string arithmeticOperator)
      {
-          std::string result = GenerateTripleResult(arithmeticOperator);
-          if(Constants::Minus == "-")
-          {
+          std::cout << "GrammaBuilder::BuildTriples " << std::endl;
 
+          TextElement* second = GetAndRemove();
+          TextElement* first = GetAndRemove();
+          std::string result = GenerateTripleResultString(arithmeticOperator, first, second);
+
+          std::string numberedResult = GetResultStringWithId();
+          TextElement* resultVariable = new TextElement(LexemType::Txt, numberedResult);
+          PushGoodii(resultVariable);
+
+          _assemblerOutputCode->push_back("#" + result);
+
+          LexemType typeFromSymbol1 = LexemType::Unknown;
+          LexemType typeFromSymbol2 = LexemType::Unknown;
+
+          if(_symbols->size() > 0 )
+          {
+               if(first->_type == LexemType::Txt)
+               {
+                    if(_symbols->count(first->_value))
+                    {
+                         std::cout << "Debug::Key succesfully found <" << first->_value << ">";
+                         TextElement* foundSymbol = _symbols->find(first->_value)->second;
+                         typeFromSymbol1 = foundSymbol->_type;
+                    }
+                    else
+                    {
+                         std::cout << "Debug::Key not found<" << first->_value << ">";
+                    }
+               }
+
+               if(second->_type == LexemType::Txt)
+               {
+                    if(_symbols->count(second->_value))
+                    {
+                         std::cout << "Debug::Key succesfully found <" << second->_value << ">";
+                         TextElement* foundSymbol = _symbols->find(second->_value)->second;
+                         typeFromSymbol2 = foundSymbol->_type;
+                    }
+                    else
+                    {
+                         std::cout << "Debug::Key not found<" << second->_value << ">";
+                    }
+               }
           }
+
+          if(typeFromSymbol1 != LexemType::Unknown || typeFromSymbol2 != LexemType::Unknown)
+          {
+               if(!CheckTypeConsistency(typeFromSymbol1,typeFromSymbol2))
+               {
+                    std::string debugMessage = "First:" + first->GetValueAndTypeAsMessage() + "| Second:" + second->GetValueAndTypeAsMessage();
+                    std::string errorMessage = "Goodii language <" + _langVersion + "> does not support expression which as has both double and int. \n" + debugMessage;
+                    yyerror(errorMessage.c_str());
+                    return;
+               }
+          }
+
+          switch(first->_type)
+          {
+               case LexemType::Txt:
+               {
+                    std::string assemblerLineTxt = "lw $t0" + first->_value;
+                    _assemblerOutputCode->push_back(assemblerLineTxt);
+                    break;
+               }
+               case LexemType::Integer:
+               {
+                    std::string assemblerLineInt = "li $t0" + first->_value;
+                    _assemblerOutputCode->push_back(assemblerLineInt);
+                    break;
+               }
+               case LexemType::Double:
+               {
+                    //TODO
+                    break;
+               }
+               
+          }
+
+          switch(second->_type)
+          {
+               case LexemType::Txt:
+               {               
+                    std::string assemblerLineTxt = "lw $t0" + second->_value;
+                    _assemblerOutputCode->push_back(assemblerLineTxt);
+                    break;
+               }
+               case LexemType::Integer:
+               {
+                    std::string assemblerLineInt = "li $t0" + second->_value;
+                    _assemblerOutputCode->push_back(assemblerLineInt);
+                    break;
+               }
+               case LexemType::Double:
+               {
+                    //TODO
+                    break;
+               }
+          }
+
+      _triplesOutputFileAppender->append(result, true); 
      }
 
 };
 
-FileAppender *fileAppender = new FileAppender("output_goodii.txt");
-GrammaBuilder *builder = new GrammaBuilder();
+FileAppender *triplesOutputFileAppender = new FileAppender("triples_goodii.txt");
+FileAppender *assemblerOutputFileAppender = new FileAppender("outputCode.asm");
+GrammaBuilder *builder = new GrammaBuilder(triplesOutputFileAppender, assemblerOutputFileAppender);
 
 %}
 
@@ -225,42 +388,28 @@ typeName:
       ;
 
 expression:
-       components '+' expression {  printf("Syntax-Recognized: dodawanie\n"); }
-	| components '-' expression {  printf("Syntax-Recognized: odejmowanie\n"); }
+       components '+' expression {  printf("Syntax-Recognized: dodawanie\n"); builder->BuildTriples(Constants::Addition); }
+	| components '-' expression {  printf("Syntax-Recognized: odejmowanie\n"); builder->BuildTriples(Constants::Subtraction); }
 	| components
 	;
 
 components:
-	  components '*' elementCmp {  printf("Syntax-Recognized: mnozenie\n"); }
-	| components '/' elementCmp {  printf("Syntax-Recognized: dzielenie\n"); }
+	  components '*' elementCmp {  printf("Syntax-Recognized: mnozenie\n"); builder->BuildTriples(Constants::Multiplication); }
+	| components '/' elementCmp {  printf("Syntax-Recognized: dzielenie\n"); builder->BuildTriples(Constants::Subtraction); }
 	| elementCmp                 {  printf("(konkretnaWartosc)\n"); }
 	;
 
 elementCmp:
-	  VALUE_INTEGER			{  printf("Syntax-Recognized: wartosc calkowita\n");          builder->Push(new TextElement(LexemType::Integer, std::to_string($1))); }
-	| VALUE_DECIMAL			{  printf("Syntax-Recognized: wartosc zmiennoprzecinkowa\n"); builder->Push(new TextElement(LexemType::Double, std::to_string($1)));  }
-     | TEXT_IDENTIFIER                        {  printf("Syntax-Recognized: text-zmn\n");                   builder->Push(new TextElement(LexemType::Txt, std::string($1))); }
+	  VALUE_INTEGER			{  printf("Syntax-Recognized: wartosc calkowita\n");          builder->PushGoodii(new TextElement(LexemType::Integer, std::to_string($1))); }
+	| VALUE_DECIMAL			{  printf("Syntax-Recognized: wartosc zmiennoprzecinkowa\n"); builder->PushGoodii(new TextElement(LexemType::Double, std::to_string($1)));  }
+     | TEXT_IDENTIFIER                        {  printf("Syntax-Recognized: text-zmn\n");                   builder->PushGoodii(new TextElement(LexemType::Txt, std::string($1))); }
 	;
 
 %%
 
 int main (int argc, char *argv[]) 
 {
-     fileAppender->tryClean();
-     fileAppender->append("HEADER\n", false);
-
-     //Test code
-
-     builder->Push(new TextElement(LexemType::Integer, "1"));
-     builder->Push(new TextElement(LexemType::Integer, "2"));
-     std::string commentedTriple1 = builder->BuildCommentFromLastTwo("+");
      
-     builder->Push(new TextElement(LexemType::Integer, "5"));
-     std::string commentedTriple2 = builder->BuildCommentFromLastTwo("*");
-
-     fileAppender->append(commentedTriple1, true);
-     fileAppender->append(commentedTriple2, true);
-
      /** glowna petla odpytujaca analizator leksykalny yyparse()**/
      int parsingResult = yyparse();
      if(parsingResult == 0)
@@ -272,6 +421,8 @@ int main (int argc, char *argv[])
           fputs("Error occured while parsing.", stdout);
      }
 
+
+     builder->GenerateAssemblerOutput();
      return parsingResult;
 }
 
