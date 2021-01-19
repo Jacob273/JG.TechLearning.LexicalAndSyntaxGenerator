@@ -299,7 +299,7 @@ public:
                }
           }
 
-          //Handling Assignments - assembler code generation
+          //Handling Assignments - assembler code generation ($t0)
           switch(first->_type)
           {
                case LexemType::Txt:
@@ -322,7 +322,7 @@ public:
                
           }
 
-          //Handling Assignments - assembler code generation
+          //Handling Assignments - assembler code generation ($t1)
           switch(second->_type)
           {
                case LexemType::Txt:
@@ -344,7 +344,7 @@ public:
                }
           }
 
-          //Handling arithmetic operator - assembler code generation for integers
+          //Handling arithmetic operator - assembler code generation for integers ($t0 and $t1 operation into $t0)
          if(CanGenerateArithmeticForInts(first->_type, second->_type))
          {
           	if(arithmeticOperator == Constants::Subtraction)
@@ -365,7 +365,7 @@ public:
 		     }
                _assemblerOutputCode->push_back("sw $t0, " + numberedResult + "\n");
          }
-         //Handling arithmetic operator - assembler code generation for doubles
+         //Handling arithmetic operator - assembler code generation for doubles ($f0 and $f1 operation into $f0)
          else if (CanGenerateArithmeticForDoubles(first->_type, second->_type))
          {
           	if(arithmeticOperator == Constants::Subtraction)
