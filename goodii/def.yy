@@ -162,6 +162,16 @@ class GrammaBuilder
                  || (firstType == LexemType::Integer && secondType == LexemType::Integer);
      }
 
+     bool CanGenerateArithmeticForInts(LexemType type1, LexemType type2)
+     {
+          return type1 == LexemType::Integer || type2 == LexemType::Integer;
+     }
+
+          bool CanGenerateArithmeticForDoubles(LexemType type1, LexemType type2)
+     {
+          return type1 == LexemType::Double || type2 == LexemType::Double;
+     }
+
 public:
 
      GrammaBuilder(FileAppender* triplesOutputFileAppender, FileAppender* assemblerOutputFileAppender){
@@ -179,13 +189,23 @@ public:
           _assemblerOutputFileAppender->tryClean();
      }
 
-     void GenerateAssemblerOutput()
+     void GenerateAssemblerDataBlock()
+     {
+          _assemblerOutputFileAppender->append(".data \n", false);
+
+          for(int i = 0 ; i < _symbols->size(); i++)
+          {
+
+          }
+     }
+
+     void GenerateAssemblerInstructions()
      {    
-          _assemblerOutputFileAppender->append(".text \n", true);
+          _assemblerOutputFileAppender->append(".text \n", false);
           for(int i = 0; i < _assemblerOutputCode->size(); i++)
           {
                std::string assemblerLine = _assemblerOutputCode->at(i);
-               _assemblerOutputFileAppender->append(assemblerLine + "\n", true);
+               _assemblerOutputFileAppender->append(assemblerLine + "\n", false);
           }
      }
 
@@ -267,6 +287,7 @@ public:
                }
           }
 
+
           if(typeFromSymbol1 != LexemType::Unknown || typeFromSymbol2 != LexemType::Unknown)
           {
                if(!CheckTypeConsistency(typeFromSymbol1,typeFromSymbol2))
@@ -278,17 +299,18 @@ public:
                }
           }
 
+          //Handling Assignments - assembler code generation
           switch(first->_type)
           {
                case LexemType::Txt:
                {
-                    std::string assemblerLineTxt = "lw $t0" + first->_value;
+                    std::string assemblerLineTxt = "lw $t0, " + first->_value;
                     _assemblerOutputCode->push_back(assemblerLineTxt);
                     break;
                }
                case LexemType::Integer:
                {
-                    std::string assemblerLineInt = "li $t0" + first->_value;
+                    std::string assemblerLineInt = "li $t0, " + first->_value;
                     _assemblerOutputCode->push_back(assemblerLineInt);
                     break;
                }
@@ -300,17 +322,18 @@ public:
                
           }
 
+          //Handling Assignments - assembler code generation
           switch(second->_type)
           {
                case LexemType::Txt:
                {               
-                    std::string assemblerLineTxt = "lw $t0" + second->_value;
+                    std::string assemblerLineTxt = "lw $t1, " + second->_value;
                     _assemblerOutputCode->push_back(assemblerLineTxt);
                     break;
                }
                case LexemType::Integer:
                {
-                    std::string assemblerLineInt = "li $t0" + second->_value;
+                    std::string assemblerLineInt = "li $t1, " + second->_value;
                     _assemblerOutputCode->push_back(assemblerLineInt);
                     break;
                }
@@ -320,6 +343,49 @@ public:
                     break;
                }
           }
+
+          //Handling arithmetic operator - assembler code generation for integers
+         if(CanGenerateArithmeticForInts(first->_type, second->_type))
+         {
+          	if(arithmeticOperator == Constants::Subtraction)
+		     {    	
+			     _assemblerOutputCode->push_back("sub $t0, $t0, $t1");
+		     }
+               else if(arithmeticOperator == Constants::Addition)
+		     {	
+			    _assemblerOutputCode->push_back("add $t0, $t0, $t1");
+		     }
+               else if(arithmeticOperator == Constants::Multiplication)
+		     {	
+			     _assemblerOutputCode->push_back("mul $t0, $t0, $t1");
+		     }
+               else if(arithmeticOperator == Constants::Subtraction)
+		     {	
+			     _assemblerOutputCode->push_back("div $t0, $t0, $t1");
+		     }
+               _assemblerOutputCode->push_back("sw $t0, " + numberedResult + "\n");
+         }
+         //Handling arithmetic operator - assembler code generation for doubles
+         else if (CanGenerateArithmeticForDoubles(first->_type, second->_type))
+         {
+          	if(arithmeticOperator == Constants::Subtraction)
+		     {    	
+			     _assemblerOutputCode->push_back("sub.s $f0, $f0, $f1");
+		     }
+               else if(arithmeticOperator == Constants::Addition)
+		     {	
+			    _assemblerOutputCode->push_back("add.s $f0, $f0, $f1");
+		     }
+               else if(arithmeticOperator == Constants::Multiplication)
+		     {	
+			     _assemblerOutputCode->push_back("mul.s $f0, $f0, $f1");
+		     }
+               else if(arithmeticOperator == Constants::Subtraction)
+		     {	
+			     _assemblerOutputCode->push_back("div.s $f0, $f0, $f1");
+		     }
+               _assemblerOutputCode->push_back("s.s $f0  , " + numberedResult + "\n");
+         }
 
       _triplesOutputFileAppender->append(result, true); 
      }
@@ -422,7 +488,7 @@ int main (int argc, char *argv[])
      }
 
 
-     builder->GenerateAssemblerOutput();
+     builder->GenerateAssemblerInstructions();
      return parsingResult;
 }
 
