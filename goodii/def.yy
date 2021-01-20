@@ -25,6 +25,7 @@ namespace Constants
      std::string Multiplication = "*";
      std::string Division = "/";
      std::string Result = "result";
+     std::string IntegerTypeDefaultValue = "0";
 }
 
 class UniqueIdGenerator
@@ -193,10 +194,19 @@ public:
      {
           _assemblerOutputFileAppender->append(".data \n", false);
 
-          for(int i = 0 ; i < _symbols->size(); i++)
-          {
-
-          }
+               std::map<std::string, TextElement*>::iterator it;
+               for (it = _symbols->begin(); it != _symbols->end(); it++)
+               {
+                         if(it->second->_type == LexemType::Integer)
+                         {
+                              std::string integerDeclaration = it->second->_value + ": .word   " + Constants::IntegerTypeDefaultValue + "\n";
+                              _assemblerOutputFileAppender->append(integerDeclaration, false);
+                         }
+                         else if(it->second->_type == LexemType::Double)
+                         {
+                              //TODO:
+                         }
+               }
      }
 
      void GenerateAssemblerInstructions()
@@ -487,7 +497,7 @@ int main (int argc, char *argv[])
           fputs("Error occured while parsing.", stdout);
      }
 
-
+     builder->GenerateAssemblerDataBlock();
      builder->GenerateAssemblerInstructions();
      return parsingResult;
 }
