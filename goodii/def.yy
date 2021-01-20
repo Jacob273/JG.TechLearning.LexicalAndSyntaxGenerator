@@ -26,6 +26,8 @@ namespace Constants
      std::string Division = "/";
      std::string Result = "result";
      std::string IntegerTypeDefaultValue = "0";
+     std::string DoubleTypeDefaultValue = "0";
+     std::string Temporary = "temp";
 }
 
 class UniqueIdGenerator
@@ -33,6 +35,7 @@ class UniqueIdGenerator
 
      static int resultCounter;
      static int triplesInvocationCounter;
+     static int temporaryVarCounter;
 
      public:
 
@@ -45,10 +48,17 @@ class UniqueIdGenerator
      {
           return ++triplesInvocationCounter;
      }
+
+     static int GetNextUniqueTemporaryVar()
+     {
+          return ++temporaryVarCounter;
+     }
+
 };
 
 int UniqueIdGenerator::resultCounter = 0;
 int UniqueIdGenerator::triplesInvocationCounter = 0;
+int UniqueIdGenerator::temporaryVarCounter = 0;
 
 class FileAppender
 {
@@ -84,6 +94,15 @@ enum LexemType
     Double = 3
 };
 
+enum TripleType
+{
+     Undefined,
+     SymbolAndSymbol,
+     ValueAndValue,
+     SymbolAndValue,
+     ValueAndSymbol
+};
+
 /**
 Klasa służąca do przechowywania:
 -Zmiennych(Txt)-
@@ -104,14 +123,19 @@ to
 class TextElement
 {
 	public:
-		LexemType _type; // lexem type 
-		std::string _value; //could be integer: 1 or double 1.0 or literal
+		LexemType _type;
+          // could be integer: 1 or double 1.0 or literal. For doubles, _value is a literal.
+		std::string _value;
+
+          // used only for LexemType::Double only!
+          std::string _optionalDoubleValue;
 
 
-     TextElement(LexemType type, std::string value)
+     TextElement(LexemType type, std::string value, std::string optionalDoubleValue = "0")
      {
           _value = value;
           _type = type;
+          _optionalDoubleValue = optionalDoubleValue;
      }
 
      std::string GetValueAndTypeAsMessage()
@@ -165,6 +189,12 @@ class GrammaBuilder
           return Constants::Result + "_" + std::to_string(nextId);
      }
 
+     std::string GetTempStringWithId()
+     {
+          int nextId = UniqueIdGenerator::GetNextUniqueTemporaryVar();
+          return Constants::Temporary + "_" + std::to_string(nextId);
+     }
+
      bool CheckTypeConsistency(LexemType firstType, LexemType secondType)
      {
           //std::cout << "GrammarBuilder:Comparing<" << std::to_string(firstType) << ">vs<" << std::to_string(secondType) << ">" << std::endl;
@@ -183,40 +213,71 @@ class GrammaBuilder
           return type1 == LexemType::Double || type2 == LexemType::Double;
      }
 
-     void ExecuteTypeValidation(TextElement* first, TextElement* second, LexemType typeFromSymbol1, LexemType typeFromSymbol2, std::string arithmeticOperator)
+
+     TripleType GetTripleType(LexemType typeFromSymbol1, LexemType typeFromSymbol2)
      {
-          // (symbol vs symbol)
-          if((typeFromSymbol1 != LexemType::Unknown && typeFromSymbol2 != LexemType::Unknown) && (!CheckTypeConsistency(typeFromSymbol1, typeFromSymbol2)))
+          if(typeFromSymbol1 != LexemType::Unknown && typeFromSymbol2 != LexemType::Unknown)
           {
-               std::string debugMessage = "First:" + std::to_string(typeFromSymbol1) + "| Second:" + std::to_string(typeFromSymbol2);
-               std::string errorMessage = "Goodii language <" + _langVersion + "> does not support expression which as has both double and int. Operation: '" + arithmeticOperator + "' \n" + debugMessage;
-               yyerror(errorMessage.c_str());
-               return;
-          }   
-          // (value vs value)
-          else if((typeFromSymbol1 == LexemType::Unknown && typeFromSymbol2 == LexemType::Unknown) && (!CheckTypeConsistency(first->_type, second->_type)))
-          {
-               std::string debugMessage = "First:" + first->GetValueAndTypeAsMessage() + "| Second:" + second->GetValueAndTypeAsMessage();
-               std::string errorMessage = "Goodii language <" + _langVersion + "> does not support expression which as has both double and int. Operation: '" + arithmeticOperator + "' \n" + debugMessage;
-               yyerror(errorMessage.c_str());
-               return;
-          } 
-          // (symbol vs value)
-          else if((typeFromSymbol1 != LexemType::Unknown && typeFromSymbol2 == LexemType::Unknown) && (!CheckTypeConsistency(typeFromSymbol1, second->_type)))
-          {
-               std::string debugMessage = "First: " + std::to_string(typeFromSymbol1) + "| Second:" + second->GetValueAndTypeAsMessage();
-               std::string errorMessage = "Goodii language <" + _langVersion + "> does not support expression which as has both double and int. Operation: '" + arithmeticOperator + "' \n" + debugMessage;
-               yyerror(errorMessage.c_str());
-               return;
-          }   
-          // (value vs symbol)
-          else if((typeFromSymbol1 == LexemType::Unknown && typeFromSymbol2 != LexemType::Unknown) && (!CheckTypeConsistency(first->_type, typeFromSymbol2)))
-          {
-               std::string debugMessage = "First: " + first->GetValueAndTypeAsMessage() + "| Second:" + std::to_string(typeFromSymbol2);
-               std::string errorMessage = "Goodii language <" + _langVersion + "> does not support expression which as has both double and int. Operation: '" + arithmeticOperator + "' \n" + debugMessage;
-               yyerror(errorMessage.c_str());
-               return;
+               return TripleType::SymbolAndSymbol;
           }
+          else if(typeFromSymbol1 == LexemType::Unknown && typeFromSymbol2 == LexemType::Unknown)
+          {
+               return TripleType::ValueAndValue;
+          }
+          else if(typeFromSymbol1 != LexemType::Unknown && typeFromSymbol2 == LexemType::Unknown)
+          {
+               return TripleType::SymbolAndValue;
+          }
+          else if(typeFromSymbol1 == LexemType::Unknown && typeFromSymbol2 != LexemType::Unknown)
+          {
+               return TripleType::ValueAndSymbol;
+          }
+          return TripleType::Undefined;
+     }
+
+     std::pair<LexemType, LexemType> GetProcessedTypes(TripleType tripleType, TextElement* first, TextElement* second, LexemType typeFromSymbol1, LexemType typeFromSymbol2)
+     {
+          switch(tripleType)
+          {
+               case TripleType::SymbolAndSymbol:
+               {
+                    return std::pair<LexemType, LexemType>(typeFromSymbol1, typeFromSymbol2);
+               }
+               case TripleType::ValueAndValue:
+               {
+                    return std::pair<LexemType, LexemType>(first->_type, second->_type);
+               }
+               case TripleType::SymbolAndValue:
+               {
+                    return std::pair<LexemType, LexemType>(typeFromSymbol1, second->_type);
+               }  
+               case TripleType::ValueAndSymbol:
+               {
+                    return std::pair<LexemType, LexemType>(first->_type, typeFromSymbol2);
+               }
+               case TripleType::Undefined:
+               {
+                    std::string errorMessage = "Undefined error occured during the verification of processed types.";
+                    yyerror(errorMessage.c_str());
+                    break;
+               }
+          }
+          return std::pair<LexemType, LexemType>(LexemType::Unknown, LexemType::Unknown);
+     }
+
+     void GenerateAssignmentCodeAssembler(LexemType first, LexemType second)
+     {
+     }
+
+     void ExecuteTypeValidation(TripleType tripleType, LexemType processedType1, LexemType processedType2, std::string arithmeticOperator)
+     {
+           if((!CheckTypeConsistency(processedType1, processedType2)))
+           {
+                    std::string debugMessage = "First:" + std::to_string(processedType1) + "| Second:" + std::to_string(processedType2);
+                     std::string errorMessage = "Goodii language <" + _langVersion + "> does not support expression which as has both double and int. Operation: '" + arithmeticOperator + "' \n" + debugMessage;
+                    yyerror(errorMessage.c_str());
+                    return;
+          } 
      }
      
      void GenerateAssignmentCodeForAssembler(LexemType type, std::string value, std::string registryName)
@@ -237,7 +298,8 @@ class GrammaBuilder
                }
                case LexemType::Double:
                {
-                    //TODO
+                    std::string assemblerLineTxt = "l.s " + registryName + ", " + value;
+                    _assemblerOutputCode->push_back(assemblerLineTxt);
                     break;
                }
                
@@ -335,14 +397,15 @@ public:
                          }
                          else if(it->second->_type == LexemType::Double)
                          {
-                              //TODO:
+                              std::string doubleDeclaration = it->second->_value + ": .float   " + it->second->_optionalDoubleValue + "\n";
+                              _assemblerOutputFileAppender->append(doubleDeclaration, false);
                          }
                }
      }
 
      void GenerateAssemblerInstructions()
      {    
-          _assemblerOutputFileAppender->append(".text \n", false);
+          _assemblerOutputFileAppender->append("\n.text\n", false);
           for(int i = 0; i < _assemblerOutputCode->size(); i++)
           {
                std::string assemblerLine = _assemblerOutputCode->at(i);
@@ -350,14 +413,14 @@ public:
           }
      }
 
-     void InsertSymbol(LexemType type, std::string value)
+     void InsertSymbol(LexemType type, std::string value, std::string optionalDoubleValue = "0")
      {
-          TextElement* intSymbol = new TextElement(type, value);
-          std::pair<std::string, TextElement*> pair = std::make_pair(intSymbol->_value, intSymbol);
+          TextElement* symbol = new TextElement(type, value, optionalDoubleValue);
+          std::pair<std::string, TextElement*> pair = std::make_pair(symbol->_value, symbol);
            _symbols->insert(pair);
      }
 
-     void PushGoodii(TextElement *element)
+     void PushGoodiiElement(TextElement *element)
      {
           std::cout << "GrammarBuilder::Pushing val<" << element->_value << "> type<" << element->_type << "> \n";
           if(_allTextElementsStack->size() > 0)
@@ -392,7 +455,7 @@ public:
 
           std::string numberedResult = GetResultStringWithId();
           TextElement* resultVariable = new TextElement(LexemType::Txt, numberedResult);
-          PushGoodii(resultVariable);
+          PushGoodiiElement(resultVariable);
 
           _assemblerOutputCode->push_back("#" + result);
 
@@ -430,10 +493,37 @@ public:
                }
           }
 
+          TripleType tripleType = GetTripleType(typeFromSymbol1, typeFromSymbol2);
+          std::pair<LexemType, LexemType> processedTypes = GetProcessedTypes(tripleType, first, second, typeFromSymbol1, typeFromSymbol2);
+          ExecuteTypeValidation(tripleType, processedTypes.first, processedTypes.second, arithmeticOperator);
 
-          ExecuteTypeValidation(first, second, typeFromSymbol1, typeFromSymbol2, arithmeticOperator);
-          GenerateAssignmentCodeForAssembler(first->_type, first->_value, "$t0");
-          GenerateAssignmentCodeForAssembler(second->_type, second->_value, "$t1");
+          if(processedTypes.first == LexemType::Integer && processedTypes.second == LexemType::Integer)
+          {
+               GenerateAssignmentCodeForAssembler(processedTypes.first, first->_value, "$t0");
+               GenerateAssignmentCodeForAssembler(processedTypes.second, second->_value, "$t1");
+          }
+          else if(processedTypes.first == LexemType::Double && processedTypes.second == LexemType::Double)
+          {
+               std::string defaultValue1 = Constants::DoubleTypeDefaultValue;
+               if(first->_type != LexemType::Txt)
+               {
+                    defaultValue1 = first->_value;
+               }
+
+               std::string tempStringLabel1 = GetTempStringWithId();
+               InsertSymbol(LexemType::Double, tempStringLabel1, defaultValue1);
+               GenerateAssignmentCodeForAssembler(processedTypes.second, tempStringLabel1, "$f0");
+
+               std::string defaultValue2 = Constants::DoubleTypeDefaultValue;
+               if(second->_type != LexemType::Txt)
+               {
+                    defaultValue2 = second->_value;
+               }
+
+               std::string tempStringLabel2 = GetTempStringWithId();
+               InsertSymbol(LexemType::Double, tempStringLabel2, defaultValue2);
+               GenerateAssignmentCodeForAssembler(processedTypes.second, tempStringLabel2, "$f1");
+          }
 
          if(CanGenerateArithmeticForInts(first->_type, second->_type))
          {
@@ -525,9 +615,9 @@ components:
 	;
 
 elementCmp:
-	  VALUE_INTEGER			{  printf("Syntax-Recognized: wartosc calkowita\n");          builder->PushGoodii(new TextElement(LexemType::Integer, std::to_string($1))); }
-	| VALUE_DECIMAL			{  printf("Syntax-Recognized: wartosc zmiennoprzecinkowa\n"); builder->PushGoodii(new TextElement(LexemType::Double, std::to_string($1)));  }
-     | TEXT_IDENTIFIER                        {  printf("Syntax-Recognized: text-zmn\n");                   builder->PushGoodii(new TextElement(LexemType::Txt, std::string($1))); }
+	  VALUE_INTEGER			{  printf("Syntax-Recognized: wartosc calkowita\n");          builder->PushGoodiiElement(new TextElement(LexemType::Integer, std::to_string($1))); }
+	| VALUE_DECIMAL			{  printf("Syntax-Recognized: wartosc zmiennoprzecinkowa\n"); builder->PushGoodiiElement(new TextElement(LexemType::Double, std::to_string($1), std::to_string($1)));  }
+     | TEXT_IDENTIFIER                        {  printf("Syntax-Recognized: text-zmn\n");        builder->PushGoodiiElement(new TextElement(LexemType::Txt, std::string($1))); }
 	;
 
 %%
