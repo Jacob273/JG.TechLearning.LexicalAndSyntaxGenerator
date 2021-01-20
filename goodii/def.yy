@@ -31,16 +31,24 @@ namespace Constants
 class UniqueIdGenerator
 {
 
-     static int idCounter;
+     static int resultCounter;
+     static int triplesInvocationCounter;
 
      public:
-     static int GetNextUnique()
+
+     static int GetNextUniqueResult()
      {
-          return ++idCounter;
+          return ++resultCounter;
+     }
+
+     static int GetNextUniqueInvocationCounter()
+     {
+          return ++triplesInvocationCounter;
      }
 };
 
-int UniqueIdGenerator::idCounter = 0;
+int UniqueIdGenerator::resultCounter = 0;
+int UniqueIdGenerator::triplesInvocationCounter = 0;
 
 class FileAppender
 {
@@ -153,12 +161,14 @@ class GrammaBuilder
 
      std::string GetResultStringWithId()
      {
-          int nextId = UniqueIdGenerator::GetNextUnique();
+          int nextId = UniqueIdGenerator::GetNextUniqueResult();
           return Constants::Result + "_" + std::to_string(nextId);
      }
 
      bool CheckTypeConsistency(LexemType firstType, LexemType secondType)
      {
+          //std::cout << "GrammarBuilder:Comparing<" << std::to_string(firstType) << ">vs<" << std::to_string(secondType) << ">" << std::endl;
+
           return (firstType == LexemType::Double && secondType == LexemType::Double) 
                  || (firstType == LexemType::Integer && secondType == LexemType::Integer);
      }
@@ -171,6 +181,42 @@ class GrammaBuilder
           bool CanGenerateArithmeticForDoubles(LexemType type1, LexemType type2)
      {
           return type1 == LexemType::Double || type2 == LexemType::Double;
+     }
+
+     void ExecuteTypeValidation(TextElement* first, TextElement* second, LexemType typeFromSymbol1, LexemType typeFromSymbol2, std::string arithmeticOperator)
+     {
+          // (symbol vs symbol)
+          if((typeFromSymbol1 != LexemType::Unknown && typeFromSymbol2 != LexemType::Unknown) && (!CheckTypeConsistency(typeFromSymbol1, typeFromSymbol2)))
+          {
+               std::string debugMessage = "First:" + std::to_string(typeFromSymbol1) + "| Second:" + std::to_string(typeFromSymbol2);
+               std::string errorMessage = "Goodii language <" + _langVersion + "> does not support expression which as has both double and int. Operation: '" + arithmeticOperator + "' \n" + debugMessage;
+               yyerror(errorMessage.c_str());
+               return;
+          }   
+          // (value vs value)
+          else if((typeFromSymbol1 == LexemType::Unknown && typeFromSymbol2 == LexemType::Unknown) && (!CheckTypeConsistency(first->_type, second->_type)))
+          {
+               std::string debugMessage = "First:" + first->GetValueAndTypeAsMessage() + "| Second:" + second->GetValueAndTypeAsMessage();
+               std::string errorMessage = "Goodii language <" + _langVersion + "> does not support expression which as has both double and int. Operation: '" + arithmeticOperator + "' \n" + debugMessage;
+               yyerror(errorMessage.c_str());
+               return;
+          } 
+          // (symbol vs value)
+          else if((typeFromSymbol1 != LexemType::Unknown && typeFromSymbol2 == LexemType::Unknown) && (!CheckTypeConsistency(typeFromSymbol1, second->_type)))
+          {
+               std::string debugMessage = "First: " + std::to_string(typeFromSymbol1) + "| Second:" + second->GetValueAndTypeAsMessage();
+               std::string errorMessage = "Goodii language <" + _langVersion + "> does not support expression which as has both double and int. Operation: '" + arithmeticOperator + "' \n" + debugMessage;
+               yyerror(errorMessage.c_str());
+               return;
+          }   
+          // (value vs symbol)
+          else if((typeFromSymbol1 == LexemType::Unknown && typeFromSymbol2 != LexemType::Unknown) && (!CheckTypeConsistency(first->_type, typeFromSymbol2)))
+          {
+               std::string debugMessage = "First: " + first->GetValueAndTypeAsMessage() + "| Second:" + std::to_string(typeFromSymbol2);
+               std::string errorMessage = "Goodii language <" + _langVersion + "> does not support expression which as has both double and int. Operation: '" + arithmeticOperator + "' \n" + debugMessage;
+               yyerror(errorMessage.c_str());
+               return;
+          }
      }
 
 public:
@@ -219,14 +265,16 @@ public:
           }
      }
 
-     void PushGoodiiSymbol()
+     void InsertSymbol(LexemType type, std::string value)
      {
-
+          TextElement* intSymbol = new TextElement(type, value);
+          std::pair<std::string, TextElement*> pair = std::make_pair(intSymbol->_value, intSymbol);
+           _symbols->insert(pair);
      }
 
      void PushGoodii(TextElement *element)
      {
-          std::cout << "Debug::Pushing val<" << element->_value << "> type<" << element->_type << "> \n";
+          std::cout << "GrammarBuilder::Pushing val<" << element->_value << "> type<" << element->_type << "> \n";
           if(_allTextElementsStack->size() > 0)
           {
                _beforeTopElement = _allTextElementsStack->top();
@@ -251,7 +299,7 @@ public:
 
      void BuildTriples(std::string arithmeticOperator)
      {
-          std::cout << "GrammaBuilder::BuildTriples " << std::endl;
+          //std::cout << "GrammaBuilder::BuildTriples. No. of call: ((" << UniqueIdGenerator::GetNextUniqueInvocationCounter() << "x))" << std::endl;
 
           TextElement* second = GetAndRemove();
           TextElement* first = GetAndRemove();
@@ -298,16 +346,7 @@ public:
           }
 
 
-          if(typeFromSymbol1 != LexemType::Unknown || typeFromSymbol2 != LexemType::Unknown)
-          {
-               if(!CheckTypeConsistency(typeFromSymbol1,typeFromSymbol2))
-               {
-                    std::string debugMessage = "First:" + first->GetValueAndTypeAsMessage() + "| Second:" + second->GetValueAndTypeAsMessage();
-                    std::string errorMessage = "Goodii language <" + _langVersion + "> does not support expression which as has both double and int. \n" + debugMessage;
-                    yyerror(errorMessage.c_str());
-                    return;
-               }
-          }
+          ExecuteTypeValidation(first, second, typeFromSymbol1, typeFromSymbol2, arithmeticOperator);
 
           //Handling Assignments - assembler code generation ($t0)
           switch(first->_type)
@@ -357,6 +396,7 @@ public:
           //Handling arithmetic operator - assembler code generation for integers ($t0 and $t1 operation into $t0)
          if(CanGenerateArithmeticForInts(first->_type, second->_type))
          {
+               InsertSymbol(LexemType::Integer, numberedResult);
           	if(arithmeticOperator == Constants::Subtraction)
 		     {    	
 			     _assemblerOutputCode->push_back("sub $t0, $t0, $t1");
@@ -378,6 +418,7 @@ public:
          //Handling arithmetic operator - assembler code generation for doubles ($f0 and $f1 operation into $f0)
          else if (CanGenerateArithmeticForDoubles(first->_type, second->_type))
          {
+              InsertSymbol(LexemType::Double, numberedResult);
           	if(arithmeticOperator == Constants::Subtraction)
 		     {    	
 			     _assemblerOutputCode->push_back("sub.s $f0, $f0, $f1");
