@@ -218,6 +218,31 @@ class GrammaBuilder
                return;
           }
      }
+     
+     void GenerateAssignmentCodeForAssembler(LexemType type, std::string value, std::string registryName)
+     {
+          switch(type)
+          {
+               case LexemType::Txt:
+               {
+                    std::string assemblerLineTxt = "lw " + registryName + ", " + value;
+                    _assemblerOutputCode->push_back(assemblerLineTxt);
+                    break;
+               }
+               case LexemType::Integer:
+               {
+                    std::string assemblerLineInt = "li " + registryName + ", " + value;
+                    _assemblerOutputCode->push_back(assemblerLineInt);
+                    break;
+               }
+               case LexemType::Double:
+               {
+                    //TODO
+                    break;
+               }
+               
+          }
+     }
 
 public:
 
@@ -347,51 +372,8 @@ public:
 
 
           ExecuteTypeValidation(first, second, typeFromSymbol1, typeFromSymbol2, arithmeticOperator);
-
-          //Handling Assignments - assembler code generation ($t0)
-          switch(first->_type)
-          {
-               case LexemType::Txt:
-               {
-                    std::string assemblerLineTxt = "lw $t0, " + first->_value;
-                    _assemblerOutputCode->push_back(assemblerLineTxt);
-                    break;
-               }
-               case LexemType::Integer:
-               {
-                    std::string assemblerLineInt = "li $t0, " + first->_value;
-                    _assemblerOutputCode->push_back(assemblerLineInt);
-                    break;
-               }
-               case LexemType::Double:
-               {
-                    //TODO
-                    break;
-               }
-               
-          }
-
-          //Handling Assignments - assembler code generation ($t1)
-          switch(second->_type)
-          {
-               case LexemType::Txt:
-               {               
-                    std::string assemblerLineTxt = "lw $t1, " + second->_value;
-                    _assemblerOutputCode->push_back(assemblerLineTxt);
-                    break;
-               }
-               case LexemType::Integer:
-               {
-                    std::string assemblerLineInt = "li $t1, " + second->_value;
-                    _assemblerOutputCode->push_back(assemblerLineInt);
-                    break;
-               }
-               case LexemType::Double:
-               {
-                    //TODO
-                    break;
-               }
-          }
+          GenerateAssignmentCodeForAssembler(first->_type, first->_value, "$t0");
+          GenerateAssignmentCodeForAssembler(second->_type, second->_value, "$t1");
 
           //Handling arithmetic operator - assembler code generation for integers ($t0 and $t1 operation into $t0)
          if(CanGenerateArithmeticForInts(first->_type, second->_type))
