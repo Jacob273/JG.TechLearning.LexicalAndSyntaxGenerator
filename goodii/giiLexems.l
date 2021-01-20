@@ -45,8 +45,8 @@ boolii					{ return BOOLEAN; }
 \!\=					{ return NEQ;}
 
 [A-Za-z_][A-Za-z0-9_]*	{ 
-							yylval.textValue = strdup(yytext);
-							return TEXT;
+							yylval.textIdentifier = strdup(yytext);
+							return TEXT_IDENTIFIER;
 						}
 [1-9][0-9]*|0			{
 							yylval.integerValue = atoi(yytext);
