@@ -1,0 +1,2 @@
+dublii a = 1.0;
+intii b = 1 + a;
