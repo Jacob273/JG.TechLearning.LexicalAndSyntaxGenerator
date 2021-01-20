@@ -273,7 +273,7 @@ class GrammaBuilder
                _assemblerOutputCode->push_back(arithmeticOperationCode);
                _assemblerOutputCode->push_back("sw " + operationResultRegistry + ", " + finalLabel + "\n");
      }
-     
+
      //sub.s $f0, $f0, $f1
      //add.s $f0, $f0, $f1
      //mul.s $f0, $f0, $f1
@@ -303,7 +303,6 @@ class GrammaBuilder
                _assemblerOutputCode->push_back(arithmeticOperationCode);
                _assemblerOutputCode->push_back("s.s " + operationResultRegistry + ", " + finalLabel + "\n");
      }
-
 
 public:
 
@@ -436,13 +435,11 @@ public:
           GenerateAssignmentCodeForAssembler(first->_type, first->_value, "$t0");
           GenerateAssignmentCodeForAssembler(second->_type, second->_value, "$t1");
 
-          //Handling arithmetic operator - assembler code generation for integers ($t0 and $t1 operation into $t0)
          if(CanGenerateArithmeticForInts(first->_type, second->_type))
          {
                InsertSymbol(LexemType::Integer, numberedResult);
                GenerateArithmeticOperationIntegersForAssembler(arithmeticOperator, "$t0", "$t1", "$t0", numberedResult);
          }
-         //Handling arithmetic operator - assembler code generation for doubles ($f0 and $f1 operation into $f0)
          else if (CanGenerateArithmeticForDoubles(first->_type, second->_type))
          {
               InsertSymbol(LexemType::Double, numberedResult);
