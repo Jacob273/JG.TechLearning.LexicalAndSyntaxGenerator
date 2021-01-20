@@ -244,6 +244,67 @@ class GrammaBuilder
           }
      }
 
+     //sub $t0, $t0, $t1
+     //add $t0, $t0, $t1
+     //mul $t0, $t0, $t1
+     //div $t0, $t0, $t1
+     //sw $t0, result10
+     void GenerateArithmeticOperationIntegersForAssembler(std::string arithmeticOperator, std::string reg1, std::string reg2, 
+                                                         std::string operationResultRegistry, std::string finalLabel)
+     {
+               std::string arithmeticOperationCode;
+               if(arithmeticOperator == Constants::Subtraction)
+		     {    
+                    arithmeticOperationCode = "sub";
+		     }
+               else if(arithmeticOperator == Constants::Addition)
+		     {	
+                    arithmeticOperationCode = "add";
+		     }
+               else if(arithmeticOperator == Constants::Multiplication)
+		     {	
+                    arithmeticOperationCode = "mul";
+		     }
+               else if(arithmeticOperator == Constants::Subtraction)
+		     {	
+                    arithmeticOperationCode = "div";
+		     }
+               arithmeticOperationCode = arithmeticOperationCode + " " + operationResultRegistry + ", " + reg1 + ", " + reg2;
+               _assemblerOutputCode->push_back(arithmeticOperationCode);
+               _assemblerOutputCode->push_back("sw " + operationResultRegistry + ", " + finalLabel + "\n");
+     }
+     
+     //sub.s $f0, $f0, $f1
+     //add.s $f0, $f0, $f1
+     //mul.s $f0, $f0, $f1
+     //div.s $f0, $f0, $f1
+     //s.s $f0, result10
+     void GenerateArithmeticOperationDoublesForAssembler(std::string arithmeticOperator, std::string reg1, std::string reg2, 
+                                                         std::string operationResultRegistry, std::string finalLabel)
+     {
+               std::string arithmeticOperationCode;
+               if(arithmeticOperator == Constants::Subtraction)
+		     {    
+                    arithmeticOperationCode = "sub.s";
+		     }
+               else if(arithmeticOperator == Constants::Addition)
+		     {	
+                    arithmeticOperationCode = "add.s";
+		     }
+               else if(arithmeticOperator == Constants::Multiplication)
+		     {	
+                    arithmeticOperationCode = "mul.s";
+		     }
+               else if(arithmeticOperator == Constants::Subtraction)
+		     {	
+                    arithmeticOperationCode = "div.s";
+		     }
+               arithmeticOperationCode = arithmeticOperationCode + " " + operationResultRegistry + ", " + reg1 + ", " + reg2;
+               _assemblerOutputCode->push_back(arithmeticOperationCode);
+               _assemblerOutputCode->push_back("s.s " + operationResultRegistry + ", " + finalLabel + "\n");
+     }
+
+
 public:
 
      GrammaBuilder(FileAppender* triplesOutputFileAppender, FileAppender* assemblerOutputFileAppender){
@@ -379,45 +440,13 @@ public:
          if(CanGenerateArithmeticForInts(first->_type, second->_type))
          {
                InsertSymbol(LexemType::Integer, numberedResult);
-          	if(arithmeticOperator == Constants::Subtraction)
-		     {    	
-			     _assemblerOutputCode->push_back("sub $t0, $t0, $t1");
-		     }
-               else if(arithmeticOperator == Constants::Addition)
-		     {	
-			    _assemblerOutputCode->push_back("add $t0, $t0, $t1");
-		     }
-               else if(arithmeticOperator == Constants::Multiplication)
-		     {	
-			     _assemblerOutputCode->push_back("mul $t0, $t0, $t1");
-		     }
-               else if(arithmeticOperator == Constants::Subtraction)
-		     {	
-			     _assemblerOutputCode->push_back("div $t0, $t0, $t1");
-		     }
-               _assemblerOutputCode->push_back("sw $t0, " + numberedResult + "\n");
+               GenerateArithmeticOperationIntegersForAssembler(arithmeticOperator, "$t0", "$t1", "$t0", numberedResult);
          }
          //Handling arithmetic operator - assembler code generation for doubles ($f0 and $f1 operation into $f0)
          else if (CanGenerateArithmeticForDoubles(first->_type, second->_type))
          {
               InsertSymbol(LexemType::Double, numberedResult);
-          	if(arithmeticOperator == Constants::Subtraction)
-		     {    	
-			     _assemblerOutputCode->push_back("sub.s $f0, $f0, $f1");
-		     }
-               else if(arithmeticOperator == Constants::Addition)
-		     {	
-			    _assemblerOutputCode->push_back("add.s $f0, $f0, $f1");
-		     }
-               else if(arithmeticOperator == Constants::Multiplication)
-		     {	
-			     _assemblerOutputCode->push_back("mul.s $f0, $f0, $f1");
-		     }
-               else if(arithmeticOperator == Constants::Subtraction)
-		     {	
-			     _assemblerOutputCode->push_back("div.s $f0, $f0, $f1");
-		     }
-               _assemblerOutputCode->push_back("s.s $f0  , " + numberedResult + "\n");
+              GenerateArithmeticOperationDoublesForAssembler(arithmeticOperator, "$f0", "$f1", "$f0", numberedResult);
          }
 
       _triplesOutputFileAppender->append(result, true); 
