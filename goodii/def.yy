@@ -499,8 +499,8 @@ public:
 
           if(processedTypes.first == LexemType::Integer && processedTypes.second == LexemType::Integer)
           {
-               GenerateAssignmentCodeForAssembler(processedTypes.first, first->_value, "$t0");
-               GenerateAssignmentCodeForAssembler(processedTypes.second, second->_value, "$t1");
+                    GenerateAssignmentCodeForAssembler(first->_type, first->_value, "$t0");
+                    GenerateAssignmentCodeForAssembler(second->_type, second->_value, "$t1"); 
           }
           else if(processedTypes.first == LexemType::Double && processedTypes.second == LexemType::Double)
           {
@@ -537,6 +537,79 @@ public:
          }
 
       _triplesOutputFileAppender->append(result, true); 
+     }
+
+     void BuildPrinting()
+     {
+          LexemType topElementType = _allTextElementsStack->top()->_type;
+
+          switch(topElementType)
+          {
+               case LexemType::Integer:
+               {
+                    std::string value = _allTextElementsStack->top()->_value;
+                    GenerateAssemblerToPrintInteger(value);
+                    break;
+               }
+               case LexemType::Double:
+               {
+                    std::string value = _allTextElementsStack->top()->_value;
+                    std::string tempStringLabel = GetTempStringWithId();
+                    InsertSymbol(LexemType::Double, tempStringLabel, value);
+                    GenerateAssemblerToPrintDouble(tempStringLabel);
+                    break;
+               }
+               case LexemType::Txt:
+               {
+                    LexemType typeFromSymbol;
+                    if(_symbols->size() > 0)
+                    {
+                         std::string value = _allTextElementsStack->top()->_value;
+                         if(_symbols->count(value))
+                         {
+                              std::cout << "BuildPrinting::Debug::Key succesfully found <" << value << ">";
+                              TextElement* foundSymbol = _symbols->find(value)->second;
+                              typeFromSymbol = foundSymbol->_type;
+
+                              switch(typeFromSymbol)
+                              {
+                                   case LexemType::Integer:
+                                   {
+                                        std::string value = _allTextElementsStack->top()->_value;
+                                        GenerateAssemblerToPrintInteger(value);
+                                        break;
+                                   }
+                                   case LexemType::Double:
+                                   {
+                                        std::string value = _allTextElementsStack->top()->_value;
+                                        GenerateAssemblerToPrintDouble(value);
+                                   }
+                              }
+                         }
+                         else
+                         {
+                              std::cout << "BuildPrinting::Debug::Key not found<" << value << ">";
+                         }
+                    }
+                    else
+                    {
+                         std::cout << "Symbols are empty." << std::endl;
+                    }
+               }
+          }
+          _assemblerOutputCode->push_back("syscall");
+     }
+
+     void GenerateAssemblerToPrintInteger(std::string value)
+     {
+           _assemblerOutputCode->push_back("li $v0, 1");//integer to print
+           _assemblerOutputCode->push_back("li $a0, " + value);
+     }
+
+     void GenerateAssemblerToPrintDouble(std::string value)
+     {
+          _assemblerOutputCode->push_back("li $v0, 2");//float to print
+		_assemblerOutputCode->push_back("l.s $f12, " + value);
      }
 
 };
@@ -584,8 +657,17 @@ lines:
 line:
        declaration  { printf("Syntax-Recognized: linia deklaracji\n");}
      | assignment  { printf("Syntax-Recognized: linia przypisania\n");}
+     | func ';'
      ;
-     
+
+expressionInBrackets:
+     '(' expression ')'  {printf("Syntax-Recognized: wyrazenie w nawiasie \n");}
+     ;
+
+func:
+     PRINT expressionInBrackets {printf("Syntax-Recognized: wyswietlenie wyrazenia w nawiasie \n"); builder->BuildPrinting();}
+     ;
+
 assignment:
 	      typeName elementCmp '=' elementCmp ';' { printf("Syntax-Recognized: przypisanie proste.\n");  }
       | 	 typeName elementCmp '=' expression ';' { printf("Syntax-Recognized: przypisanie zlozone.\n");  }
