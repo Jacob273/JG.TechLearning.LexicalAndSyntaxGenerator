@@ -265,16 +265,13 @@ class GrammaBuilder
           return std::pair<LexemType, LexemType>(LexemType::Unknown, LexemType::Unknown);
      }
 
-     void GenerateAssignmentCodeAssembler(LexemType first, LexemType second)
-     {
-     }
 
      void ExecuteTypeValidation(TripleType tripleType, LexemType processedType1, LexemType processedType2, std::string arithmeticOperator)
      {
            if((!CheckTypeConsistency(processedType1, processedType2)))
            {
                     std::string debugMessage = "First:" + std::to_string(processedType1) + "| Second:" + std::to_string(processedType2);
-                     std::string errorMessage = "Goodii language <" + _langVersion + "> does not support expression which as has both double and int. Operation: '" + arithmeticOperator + "' \n" + debugMessage;
+                    std::string errorMessage = "Goodii language <" + _langVersion + "> does not support expression which as has both dublii and intii. Operation: '" + arithmeticOperator + "' \n" + debugMessage;
                     yyerror(errorMessage.c_str());
                     return;
           } 
@@ -468,13 +465,13 @@ public:
                {
                     if(_symbols->count(first->_value))
                     {
-                         std::cout << "Debug::Key succesfully found <" << first->_value << ">";
+                         std::cout << "Debug::Key succesfully found <" << first->_value << "> \n";
                          TextElement* foundSymbol = _symbols->find(first->_value)->second;
                          typeFromSymbol1 = foundSymbol->_type;
                     }
                     else
                     {
-                         std::cout << "Debug::Key not found<" << first->_value << ">";
+                         std::cout << "Debug::Key not found<" << first->_value << "> \n";
                     }
                }
 
@@ -482,13 +479,13 @@ public:
                {
                     if(_symbols->count(second->_value))
                     {
-                         std::cout << "Debug::Key succesfully found <" << second->_value << ">";
+                         std::cout << "Debug::Key succesfully found <" << second->_value << "> \n";
                          TextElement* foundSymbol = _symbols->find(second->_value)->second;
                          typeFromSymbol2 = foundSymbol->_type;
                     }
                     else
                     {
-                         std::cout << "Debug::Key not found<" << second->_value << ">";
+                         std::cout << "Debug::Key not found<" << second->_value << "> \n";
                     }
                }
           }
@@ -542,7 +539,7 @@ public:
      void BuildPrinting()
      {
           LexemType topElementType = _allTextElementsStack->top()->_type;
-
+          std::cout << "BuildPrinting:: top element type <" << topElementType << "> \n"; 
           switch(topElementType)
           {
                case LexemType::Integer:
@@ -567,7 +564,7 @@ public:
                          std::string value = _allTextElementsStack->top()->_value;
                          if(_symbols->count(value))
                          {
-                              std::cout << "BuildPrinting::Debug::Key succesfully found <" << value << ">";
+                              std::cout << "BuildPrinting::Debug::Key succesfully found <" << value << "> \n";
                               TextElement* foundSymbol = _symbols->find(value)->second;
                               typeFromSymbol = foundSymbol->_type;
 
@@ -597,21 +594,86 @@ public:
                     }
                }
           }
-          _assemblerOutputCode->push_back("syscall");
+          _assemblerOutputCode->push_back("syscall \n");
      }
 
      void GenerateAssemblerToPrintInteger(std::string value)
      {
-           _assemblerOutputCode->push_back("li $v0, 1");//integer to print
-           _assemblerOutputCode->push_back("li $a0, " + value);
+           _assemblerOutputCode->push_back("\n\nli $v0, 1");//integer to print
+           _assemblerOutputCode->push_back("lw $a0, " + value);
      }
 
      void GenerateAssemblerToPrintDouble(std::string value)
      {
-          _assemblerOutputCode->push_back("li $v0, 2");//float to print
+          _assemblerOutputCode->push_back("\n\nli $v0, 2");//float to print
 		_assemblerOutputCode->push_back("l.s $f12, " + value);
      }
 
+     //Funkcja wywolywana w przypadku przypisania intii a = 5; 
+     //parametrem do funkcji jest w takim przypadku zmienna 'a' (identyfikator).
+     //Moze byc do niej przypisana wartosc liczby lub innej zmiennej
+     void HandleIntegerAssignment(std::string id)
+     {
+          std::cout << "Debug::HandleIntegerAssignment:: for " + id + "\n";
+          LexemType topElementType = _allTextElementsStack->top()->_type;
+          std::string topElementValue = _allTextElementsStack->top()->_value;
+
+          switch(topElementType)
+          {
+               case LexemType::Double:
+               {
+                    yyerror("Dublii value cannot be set on declared intii \n");
+                    break;
+               }
+               case LexemType::Integer:
+               {
+                    std::cout << "HandleIntegerAssignment:: topElement type is integer \n";
+                    InsertSymbol(LexemType::Integer, id);
+                    GenerateNewValueAssignmentCodeForAssembler(id, LexemType::Txt);
+                    break;
+               }
+          }
+     }
+
+     //Generuje kod assemblera przypisujacy wartosci odpowiednim rejestrom do innych zmiennych lub po prostu wartosci
+     //Wejsciem jest nazwa zmiennej, np w przypadku intii a = 5; wejsciem jest identyfikator 'a'.
+     //Natomiast liczba 5 musi zostac sciagnieta ze stosu TextElementów. 
+     void GenerateNewValueAssignmentCodeForAssembler(std::string varName, LexemType identifierType)
+     {
+          std::cout << "Debug::GenerateNewValueAssignmentCodeForAssembler:: for " + varName + " " + std::to_string(identifierType) + "\n";
+          
+          TextElement* topElement = _allTextElementsStack->top();
+          _assemblerOutputCode->push_back("#" +varName + "=" + topElement->_value);
+
+          const std::string defaultRegistryNameForInteger = "$t0";
+          const std::string defaultRegistryNameForDouble = "$f0";
+          
+          switch(identifierType)
+          {
+               case LexemType::Txt:
+               {
+                    std::cout << "Debug::GenerateNewValueAssignmentCodeForAssembler:: identifier is txt \n";
+                    switch(_allTextElementsStack->top()->_type)
+                    {   
+                         case LexemType::Integer: //stala
+                         {
+                              std::cout << "Debug::GenerateNewValueAssignmentCodeForAssembler:: top is integer \n";
+                              _assemblerOutputCode->push_back("li " + defaultRegistryNameForInteger +", " + _allTextElementsStack->top()->_value);
+                              break;
+                         }
+                         case LexemType::Txt: // zmienna
+                         {    
+                               std::cout << "Debug::GenerateNewValueAssignmentCodeForAssembler:: top is txt \n";
+                              _assemblerOutputCode->push_back("lw " + defaultRegistryNameForInteger + ", " + varName);
+                              break;
+                         }
+                    }
+                    _assemblerOutputCode->push_back("sw " + defaultRegistryNameForInteger + ", " + varName);
+               }
+          }
+          return;
+     }
+     
 };
 
 FileAppender *triplesOutputFileAppender = new FileAppender("triples_goodii.txt");
@@ -665,12 +727,16 @@ expressionInBrackets:
      ;
 
 func:
-     PRINT expressionInBrackets {printf("Syntax-Recognized: wyswietlenie wyrazenia w nawiasie \n"); builder->BuildPrinting();}
+     PRINT expressionInBrackets       {printf("Syntax-Recognized: wyswietlenie wyrazenia w nawiasie \n"); builder->BuildPrinting();}
+     | READ '(' TEXT_IDENTIFIER ')'  {printf("Syntax-Recognized: wczytywanie \n"); } //TODO: builder->BuildReading($3);}
      ;
 
 assignment:
 	      typeName elementCmp '=' elementCmp ';' { printf("Syntax-Recognized: przypisanie proste.\n");  }
       | 	 typeName elementCmp '=' expression ';' { printf("Syntax-Recognized: przypisanie zlozone.\n");  }
+      |    TEXT_IDENTIFIER '=' expression ';'     { printf("Syntax-Recognized: przypisanie identyfikatora \n"); builder->GenerateNewValueAssignmentCodeForAssembler($1, LexemType::Txt); }
+      |    INT TEXT_IDENTIFIER '=' expression ';' { printf("Syntax-Recognized: przypisanie identyfikatora dla inta \n"); builder->HandleIntegerAssignment($2); }
+
 	;
 
 declaration:
