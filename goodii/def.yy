@@ -921,7 +921,7 @@ assignment:
 
 declaration:
          INT TEXT_IDENTIFIER ';' { printf("Syntax-Recognized: deklaracja inta\n"); /** sama deklaracja w goodii nie generuje assemblera **/}
-     |   DOUBLE TEXT_IDENTIFIER ';' { printf("Syntax-Recognized: deklaracja dubla\n"); /** sama deklaracja w goodii nie generuje assemblera**/}
+     |   DOUBLE TEXT_IDENTIFIER ';' { printf("Syntax-Recognized: deklaracja double\n"); /** sama deklaracja w goodii nie generuje assemblera**/}
      |   STRINGI TEXT_IDENTIFIER ';' { printf("Syntax-Recognized: deklaracja stringa\n"); /** sama deklaracja w goodii nie generuje assemblera **/}
      |   BOOLEAN TEXT_IDENTIFIER ';' { printf("Syntax-Recognized: deklaracja boola \n"); /** sama deklaracja w goodii nie generuje assemblera **/ }
      ;
