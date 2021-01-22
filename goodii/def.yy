@@ -664,7 +664,7 @@ public:
                          case LexemType::Txt: // zmienna
                          {    
                                std::cout << "Debug::GenerateNewValueAssignmentCodeForAssembler:: top is txt \n";
-                              _assemblerOutputCode->push_back("lw " + defaultRegistryNameForInteger + ", " + varName);
+                              _assemblerOutputCode->push_back("lw " + defaultRegistryNameForInteger + ", " + _allTextElementsStack->top()->_value);
                               break;
                          }
                     }

@@ -1,0 +1,9 @@
+intii a = 10;
+printi(a);
+a = 11;
+printi(a);
+intii b = 12;
+printi(b);
+a = b;
+printi(a);
+printi(b);
