@@ -635,6 +635,29 @@ public:
           }
      }
 
+     //Funkcja wywolywana w przypadku przypisania dublii a = 5.0; 
+     //parametrem do funkcji jest w takim przypadku zmienna 'a' (identyfikator).
+     //Moze byc do niej przypisana wartosc liczby lub innej zmiennej
+     void HandleDoubleAssignment(std::string id)
+     {
+          std::cout << "Debug::HandleDoubleAssignment:: for " + id + "\n";
+          LexemType topElementType = _allTextElementsStack->top()->_type;
+          std::string topElementValue = _allTextElementsStack->top()->_value;
+
+          switch(topElementType)
+          {
+               case LexemType::Integer:
+               {
+                    yyerror("Intii value cannot be set on declared Dublii \n");
+               }
+               case LexemType::Double:
+               {
+                    InsertSymbol(LexemType::Double, id, topElementValue);
+                    break;
+               }
+          }
+     }
+
      //Generuje kod assemblera przypisujacy wartosci odpowiednim rejestrom do innych zmiennych lub po prostu wartosci
      //Wejsciem jest nazwa zmiennej, np w przypadku intii a = 5; wejsciem jest identyfikator 'a'.
      //Natomiast liczba 5 musi zostac sciagnieta ze stosu TextElementów. 
@@ -669,7 +692,7 @@ public:
                          }
                          case LexemType::Double://stala ale nieprawidlowa
                          {
-                                yyerror("Dublii value cannot be set on intii \n");
+                                yyerror("~Dublii value cannot be set on intii \n");
                          }
                     }
                     _assemblerOutputCode->push_back("sw " + defaultRegistryNameForInteger + ", " + varName);
@@ -740,6 +763,7 @@ assignment:
       | 	 typeName elementCmp '=' expression ';' { printf("Syntax-Recognized: przypisanie zlozone.\n");  }
       |    TEXT_IDENTIFIER '=' expression ';'     { printf("Syntax-Recognized: przypisanie identyfikatora \n"); builder->GenerateNewValueAssignmentCodeForAssembler($1, LexemType::Txt); }
       |    INT TEXT_IDENTIFIER '=' expression ';' { printf("Syntax-Recognized: przypisanie identyfikatora dla inta \n"); builder->HandleIntegerAssignment($2); }
+      |    DOUBLE TEXT_IDENTIFIER '=' expression ';' { printf(" Syntax-Recognized: przypisanie identyfikatora dla double \n"); builder->HandleDoubleAssignment($2);  }
 
 	;
 
