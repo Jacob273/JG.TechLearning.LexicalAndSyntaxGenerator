@@ -454,7 +454,7 @@ public:
 
      void GenerateAssemblerInstructions()
      {    
-          _assemblerOutputFileAppender->append("\n.text\n", false);
+          _assemblerOutputFileAppender->append("\n.text\n\n", false);
           for(int i = 0; i < _assemblerOutputCode->size(); i++)
           {
                std::string assemblerLine = _assemblerOutputCode->at(i);
