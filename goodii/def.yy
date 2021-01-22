@@ -28,6 +28,7 @@ namespace Constants
      std::string IntegerTypeDefaultValue = "0";
      std::string DoubleTypeDefaultValue = "0";
      std::string Temporary = "temp";
+     std::string JumpLabel = "jmplabel";
 }
 
 class UniqueIdGenerator
@@ -36,6 +37,7 @@ class UniqueIdGenerator
      static int resultCounter;
      static int triplesInvocationCounter;
      static int temporaryVarCounter;
+     static int labelsCounter;
 
      public:
 
@@ -54,11 +56,17 @@ class UniqueIdGenerator
           return ++temporaryVarCounter;
      }
 
+     static int GetNextLabel()
+     {
+          return ++labelsCounter;
+     }
+
 };
 
 int UniqueIdGenerator::resultCounter = 0;
 int UniqueIdGenerator::triplesInvocationCounter = 0;
 int UniqueIdGenerator::temporaryVarCounter = 0;
+int UniqueIdGenerator::labelsCounter = 0;
 
 class FileAppender
 {
@@ -86,6 +94,16 @@ class FileAppender
           }
 };
 
+enum class CmpOperator
+     {
+           Unknown = 0,
+           EQ = 1,
+          NEQ = 2,
+          GEQ = 3,
+          LEQ = 4,
+          LARGER = 5,
+          SMALLER = 6
+     };
 enum LexemType
 {
     Unknown = 0,
@@ -164,6 +182,9 @@ class GrammaBuilder
      std::string _currResult;
      std::string _langVersion = "v. 1.0";
 
+     std::stack<CmpOperator> *_comparisonOperators;
+     std::stack<std::string> *_jumpLabels;
+
      FileAppender *_triplesOutputFileAppender;
      FileAppender *_assemblerOutputFileAppender;
 
@@ -173,6 +194,28 @@ class GrammaBuilder
          {
              TextElement* tmp = _allTextElementsStack->top();
              _allTextElementsStack->pop();
+             return tmp;
+         }
+         return nullptr;
+     }
+
+     CmpOperator GetAndRemoveOperator()
+     {
+         if (_comparisonOperators->size() > 0)
+         {
+             CmpOperator tmp = _comparisonOperators->top();
+             _comparisonOperators->pop();
+             return tmp;
+         }
+         return CmpOperator::Unknown;
+     }
+
+     std::string GetAndRemoveJumpLabel()
+     {
+         if (_jumpLabels->size() > 0)
+         {
+             std::string tmp = _jumpLabels->top();
+             _jumpLabels->pop();
              return tmp;
          }
          return nullptr;
@@ -193,6 +236,13 @@ class GrammaBuilder
      {
           int nextId = UniqueIdGenerator::GetNextUniqueTemporaryVar();
           return Constants::Temporary + "_" + std::to_string(nextId);
+     }
+
+     
+     std::string GetLabelStringWithId()
+     {
+          int nextId = UniqueIdGenerator::GetNextLabel();
+          return Constants::JumpLabel + "_" + std::to_string(nextId);
      }
 
      bool CheckTypeConsistency(LexemType firstType, LexemType secondType)
@@ -367,6 +417,8 @@ public:
 
      GrammaBuilder(FileAppender* triplesOutputFileAppender, FileAppender* assemblerOutputFileAppender){
           _allTextElementsStack = new std::stack<TextElement*>();
+          _comparisonOperators = new std::stack<CmpOperator>();
+          _jumpLabels = new std::stack<std::string>();
           _assemblerOutputCode = new std::vector<std::string>();
           _triplesOutputFileAppender = triplesOutputFileAppender;
           _assemblerOutputFileAppender = assemblerOutputFileAppender;
@@ -419,12 +471,17 @@ public:
 
      void PushGoodiiElement(TextElement *element)
      {
-          std::cout << "GrammarBuilder::Pushing val<" << element->_value << "> type<" << element->_type << "> \n";
+          std::cout << "Debug::GrammarBuilder::Pushing val<" << element->_value << "> type<" << element->_type << "> \n";
           if(_allTextElementsStack->size() > 0)
           {
                _beforeTopElement = _allTextElementsStack->top();
           }
           _allTextElementsStack->push(element);
+     }
+
+     void PushCmpOperator(CmpOperator op)
+     {
+          _comparisonOperators->push(op);
      }
 
      std::string BuildCommentFromLastTwo(std::string concatenator)
@@ -564,7 +621,7 @@ public:
                          std::string value = _allTextElementsStack->top()->_value;
                          if(_symbols->count(value))
                          {
-                              std::cout << "BuildPrintingAssembler::Debug::Key succesfully found <" << value << "> \n";
+                              std::cout << "Debug::BuildPrintingAssembler::Debug::Key succesfully found <" << value << "> \n";
                               TextElement* foundSymbol = _symbols->find(value)->second;
                               typeFromSymbol = foundSymbol->_type;
 
@@ -585,7 +642,7 @@ public:
                          }
                          else
                          {
-                              std::cout << "BuildPrintingAssembler::Debug::Key not found<" << value << ">";
+                              std::cout << "Debug::BuildPrintingAssembler::Debug::Key not found<" << value << ">";
                          }
                     }
                     else
@@ -627,7 +684,7 @@ public:
                }
                case LexemType::Integer:
                {
-                    std::cout << "HandleIntegerAssignment:: topElement type is integer \n";
+                    std::cout << "Debug::HandleIntegerAssignment:: topElement type is integer \n";
                     InsertSymbol(LexemType::Integer, id);
                     GenerateNewValueAssignmentCodeForAssembler(id, LexemType::Txt);
                     break;
@@ -708,6 +765,69 @@ public:
           _assemblerOutputCode->push_back("sw $v0, " + varName);
      }
      
+     void GenerateConditionalIfStatementAssembler()
+     {
+          TextElement* topElement = GetAndRemove();
+          GenerateAssignmentCodeForAssembler(topElement->_type, topElement->_value, "$t1");
+          TextElement* newTopElement = GetAndRemove();
+          GenerateAssignmentCodeForAssembler(newTopElement->_type, newTopElement->_value, "$t0");
+          CmpOperator topComparisonOperator = GetAndRemoveOperator();
+          std::string numberedLabel = GenerateComparisonInstructionAssembler(topComparisonOperator, "$t0", "$t1");
+          _jumpLabels->push(numberedLabel);
+     }
+
+     void GenerateConditionalJumpLabelAssembler()
+     {
+          std::string jumpLabel = GetAndRemoveJumpLabel();
+          _assemblerOutputCode->push_back(jumpLabel + ":");
+     }
+
+     std::string GenerateComparisonInstructionAssembler(CmpOperator comparisonOperator, std::string reg1, std::string reg2)
+     {
+          _assemblerOutputCode->push_back("\n# conditional statement:");
+           
+          std::string assemblerInstruction = "";
+
+          switch(comparisonOperator)
+          {
+               case CmpOperator::EQ:
+               {
+                    assemblerInstruction += "bne";
+                    break;
+               }
+               case CmpOperator::NEQ:
+               {
+                    assemblerInstruction += "beq";
+                    break;
+               }
+               case CmpOperator::SMALLER:
+               {
+                    assemblerInstruction += "bge";
+                    break;
+               }
+               case CmpOperator::LARGER:
+               {
+                   assemblerInstruction += "ble"; 
+                   break;
+               }
+               case CmpOperator::GEQ:
+               {
+                    assemblerInstruction += "blt";
+                    break;
+               }
+               case CmpOperator::LEQ:
+               {
+                    assemblerInstruction += "bgt";
+                    break;
+               }
+          }
+
+          std::string numberedLabel = GetLabelStringWithId();
+          assemblerInstruction += " " + reg1 + ", " + reg2 + " ," + numberedLabel;
+          _assemblerOutputCode->push_back(assemblerInstruction);
+          return numberedLabel;
+     }
+
 };
 
 FileAppender *triplesOutputFileAppender = new FileAppender("triples_goodii.txt");
@@ -735,7 +855,7 @@ GrammaBuilder *builder = new GrammaBuilder(triplesOutputFileAppender, assemblerO
 %token IF ELSE WHILE RETURN;
 %token READ PRINT;
 %token TRUE FALSE COMMENT;
-%token EQ NEQ GEQ LEQ;
+%token EQ NEQ GEQ LEQ LARGER SMALLER;
 
 %token<textIdentifier> TEXT_IDENTIFIER;
 %token<integerValue> VALUE_INTEGER;
@@ -754,11 +874,30 @@ line:
        declaration  { printf("Syntax-Recognized: linia deklaracji\n");}
      | assignment  { printf("Syntax-Recognized: linia przypisania\n");}
      | func ';'
+     | if_expression ';'
      ;
 
 expressionInBrackets:
      '(' expression ')'  {printf("Syntax-Recognized: wyrazenie w nawiasie \n");}
      ;
+
+if_start:
+       IF '(' expression compOperator expression ')'  { printf("Syntax-Recognized: poczatek instrukcji warunkowej \n"); builder->GenerateConditionalIfStatementAssembler(); }
+       ;
+
+if_expression:
+          if_start '{' lines '}'  { printf("Syntax-Recognized: wnetrze instrukcji warunkowej \n"); builder->GenerateConditionalJumpLabelAssembler(); }
+       |  if_start '{'  '}' { printf("Syntax-Recognized: pustrze wnetrze instrukcji warunkowej \n"); builder->GenerateConditionalJumpLabelAssembler(); }
+     ;
+
+compOperator: 
+       EQ      {    printf("Syntax-Recognized: operator rowna sie \n"); builder->PushCmpOperator(CmpOperator::EQ); }
+	| NEQ     {    printf("Syntax-Recognized: operator rozna sie \n"); builder->PushCmpOperator(CmpOperator::NEQ);}
+	| GEQ     {    printf("Syntax-Recognized: operator wiekszy rowny \n"); builder->PushCmpOperator(CmpOperator::GEQ);}
+	| LEQ     {    printf("Syntax-Recognized: operator mniejszy rowny \n"); builder->PushCmpOperator(CmpOperator::LEQ);}
+	| LARGER  {    printf("Syntax-Recognized: operator wiekszy \n"); builder->PushCmpOperator(CmpOperator::LARGER);}
+	| SMALLER {    printf("Syntax-Recognized: operator mniejszy \n"); builder->PushCmpOperator(CmpOperator::SMALLER);}
+	;
 
 func:
        PRINT expressionInBrackets       { printf("Syntax-Recognized: wyswietlenie wyrazenia w nawiasie \n"); builder->BuildPrintingAssembler();}
@@ -794,7 +933,7 @@ expression:
 components:
 	  components '*' elementCmp {  printf("Syntax-Recognized: mnozenie\n"); builder->BuildTriples(Constants::Multiplication); }
 	| components '/' elementCmp {  printf("Syntax-Recognized: dzielenie\n"); builder->BuildTriples(Constants::Subtraction); }
-	| elementCmp                 {  printf("(konkretnaWartosc)\n"); }
+	| elementCmp                 {  printf("(skladnik)\n"); }
 	;
 
 elementCmp:

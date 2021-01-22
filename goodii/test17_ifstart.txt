@@ -1,0 +1,18 @@
+intii a = 10;
+intii b = 11;
+intii c = 0;
+
+ifi(a <= b)
+{
+	printi(a + 100);
+};
+
+ifi(a >= c)
+{
+	printi(a + 200);
+};
+
+ifi(a == b)
+{
+	printi(a + 100);
+};
