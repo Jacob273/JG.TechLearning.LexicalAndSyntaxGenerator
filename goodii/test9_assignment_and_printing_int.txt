@@ -1,0 +1,4 @@
+intii a = 5;
+printi(a);
+a = 700;
+printi(a);
