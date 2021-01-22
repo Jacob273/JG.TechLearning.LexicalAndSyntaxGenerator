@@ -642,7 +642,7 @@ public:
                          }
                          else
                          {
-                              std::cout << "Debug::BuildPrintingAssembler::Debug::Key not found<" << value << ">";
+                              std::cout << "~Debug::BuildPrintingAssembler::Debug::Key not found<" << value << ">";
                          }
                     }
                     else
@@ -914,7 +914,10 @@ assignment:
 	;
 
 declaration:
-     typeName elementCmp ';' { printf("Syntax-Recognized: deklaracja\n"); }
+         INT TEXT_IDENTIFIER ';' { printf("Syntax-Recognized: deklaracja inta\n"); /** sama deklaracja w goodii nie generuje assemblera **/}
+     |   DOUBLE TEXT_IDENTIFIER ';' { printf("Syntax-Recognized: deklaracja dubla\n"); /** sama deklaracja w goodii nie generuje assemblera**/}
+     |   STRINGI TEXT_IDENTIFIER ';' { printf("Syntax-Recognized: deklaracja stringa\n"); /** sama deklaracja w goodii nie generuje assemblera **/}
+     |   BOOLEAN TEXT_IDENTIFIER ';' { printf("Syntax-Recognized: deklaracja boola \n"); /** sama deklaracja w goodii nie generuje assemblera **/ }
      ;
 
 typeName:
@@ -939,7 +942,7 @@ components:
 elementCmp:
 	  VALUE_INTEGER			{  printf("Syntax-Recognized: wartosc calkowita\n");          builder->PushGoodiiElement(new TextElement(LexemType::Integer, std::to_string($1))); }
 	| VALUE_DECIMAL			{  printf("Syntax-Recognized: wartosc zmiennoprzecinkowa\n"); builder->PushGoodiiElement(new TextElement(LexemType::Double, std::to_string($1), std::to_string($1)));  }
-     | TEXT_IDENTIFIER                        {  printf("Syntax-Recognized: text-zmn\n");        builder->PushGoodiiElement(new TextElement(LexemType::Txt, std::string($1))); }
+     | TEXT_IDENTIFIER             {  printf("Syntax-Recognized: text-zmn\n");                   builder->PushGoodiiElement(new TextElement(LexemType::Txt, std::string($1))); }
 	;
 
 %%
@@ -981,19 +984,23 @@ int main (int argc, char *argv[])
 ==================================================================================================
 
 
-     //Zadanie: zrzucic stack do trojki
-     // 1 + 2 * 5                       wyrazenie wejsciowe
-     
-     // rpn.txt 1 2 5 * +               zapis wyrazenia wejsciowego w odwrotnej notacji polskiej
-     
-     // threes.txt tmp 1 2 +            plik trójkowy
-     // tmp1 = 2 * 5
-     // tmp2 = 1 tmp1 
-     
-     // **kod wyjsciowy**
-     // li $t0, 1
-     // li $t1, 2
-     // add $t0, $t0, $t1
-     // sw $t1, tmp
+Assembler:
+---------------------------
+load immediate / load word / load address
+
+     li register, num - przenosi stala do rejestru
+     li $t0, 5
+
+     lw register, addr - przenosi wartosc do rejestru
+     lw $t0, result
+
+     la $t3, x (przeniesienie adresu)
+
+     sw $t1, $t0 (zapis od t1 do t0)
+     sw $t1, a (zapis t1 do pamieci pod etykieta a)
+---------------------------
+
+mul $t1, $t1, $t0 (pomnozenie t1 i t0 i zapisanie w t1)
+
 
 **/
