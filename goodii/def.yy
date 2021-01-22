@@ -334,19 +334,19 @@ class GrammaBuilder
                case LexemType::Txt:
                {
                     std::string assemblerLineTxt = "lw " + registryName + ", " + value;
-                    _assemblerOutputCode->push_back(assemblerLineTxt);
+                    PushBackCode(assemblerLineTxt);
                     break;
                }
                case LexemType::Integer:
                {
                     std::string assemblerLineInt = "li " + registryName + ", " + value;
-                    _assemblerOutputCode->push_back(assemblerLineInt);
+                    PushBackCode(assemblerLineInt);
                     break;
                }
                case LexemType::Double:
                {
                     std::string assemblerLineTxt = "l.s " + registryName + ", " + value;
-                    _assemblerOutputCode->push_back(assemblerLineTxt);
+                    PushBackCode(assemblerLineTxt);
                     break;
                }
                
@@ -379,8 +379,8 @@ class GrammaBuilder
                     arithmeticOperationCode = "div";
 		     }
                arithmeticOperationCode = arithmeticOperationCode + " " + operationResultRegistry + ", " + reg1 + ", " + reg2;
-               _assemblerOutputCode->push_back(arithmeticOperationCode);
-               _assemblerOutputCode->push_back("sw " + operationResultRegistry + ", " + finalLabel + "\n");
+               PushBackCode(arithmeticOperationCode);
+               PushBackCode("sw " + operationResultRegistry + ", " + finalLabel + "\n");
      }
 
      //sub.s $f0, $f0, $f1
@@ -409,8 +409,8 @@ class GrammaBuilder
                     arithmeticOperationCode = "div.s";
 		     }
                arithmeticOperationCode = arithmeticOperationCode + " " + operationResultRegistry + ", " + reg1 + ", " + reg2;
-               _assemblerOutputCode->push_back(arithmeticOperationCode);
-               _assemblerOutputCode->push_back("s.s " + operationResultRegistry + ", " + finalLabel + "\n");
+               PushBackCode(arithmeticOperationCode);
+               PushBackCode("s.s " + operationResultRegistry + ", " + finalLabel + "\n");
      }
 
 public:
@@ -479,11 +479,17 @@ public:
           _allTextElementsStack->push(element);
      }
 
+     void PushBackCode(std::string assemblerCode)
+     {
+          _assemblerOutputCode->push_back(assemblerCode);
+     }
+
      void PushCmpOperator(CmpOperator op)
      {
           _comparisonOperators->push(op);
      }
 
+     //unused, was used for test purposes
      std::string BuildCommentFromLastTwo(std::string concatenator)
      {
           std::string commentedResult;
@@ -495,7 +501,7 @@ public:
           {
                commentedResult = "#" + concatenator + _allTextElementsStack->top()->_value;
           }
-          _assemblerOutputCode->push_back(commentedResult);
+          PushBackCode(commentedResult);
           return commentedResult;
      }
 
@@ -511,7 +517,7 @@ public:
           TextElement* resultVariable = new TextElement(LexemType::Txt, numberedResult);
           PushGoodiiElement(resultVariable);
 
-          _assemblerOutputCode->push_back("#" + result);
+          PushBackCode("#" + result);
 
           LexemType typeFromSymbol1 = LexemType::Unknown;
           LexemType typeFromSymbol2 = LexemType::Unknown;
@@ -651,19 +657,19 @@ public:
                     }
                }
           }
-          _assemblerOutputCode->push_back("syscall \n");
+          PushBackCode("syscall \n");
      }
 
      void GenerateAssemblerToPrintInteger(std::string value)
      {
-           _assemblerOutputCode->push_back("\n\nli $v0, 1");//integer to print
-           _assemblerOutputCode->push_back("lw $a0, " + value);
+           PushBackCode("\n\nli $v0, 1");//integer to print
+           PushBackCode("lw $a0, " + value);
      }
 
      void GenerateAssemblerToPrintDouble(std::string value)
      {
-          _assemblerOutputCode->push_back("\n\nli $v0, 2");//float to print
-		_assemblerOutputCode->push_back("l.s $f12, " + value);
+          PushBackCode("\n\nli $v0, 2");//float to print
+		PushBackCode("l.s $f12, " + value);
      }
 
      //Funkcja wywolywana w przypadku przypisania intii a = 5; 
@@ -723,7 +729,7 @@ public:
           std::cout << "Debug::GenerateNewValueAssignmentCodeForAssembler:: for " + varName + " " + std::to_string(identifierType) + "\n";
           
           TextElement* topElement = _allTextElementsStack->top();
-          _assemblerOutputCode->push_back("#" +varName + "=" + topElement->_value);
+          PushBackCode("#" +varName + "=" + topElement->_value);
 
           const std::string defaultRegistryNameForInteger = "$t0";
           const std::string defaultRegistryNameForDouble = "$f0";
@@ -738,13 +744,13 @@ public:
                          case LexemType::Integer: //stala
                          {
                               std::cout << "Debug::GenerateNewValueAssignmentCodeForAssembler:: top is integer \n";
-                              _assemblerOutputCode->push_back("li " + defaultRegistryNameForInteger +", " + _allTextElementsStack->top()->_value);
+                              PushBackCode("li " + defaultRegistryNameForInteger +", " + _allTextElementsStack->top()->_value);
                               break;
                          }
                          case LexemType::Txt: // zmienna
                          {    
                                std::cout << "Debug::GenerateNewValueAssignmentCodeForAssembler:: top is txt \n";
-                              _assemblerOutputCode->push_back("lw " + defaultRegistryNameForInteger + ", " + _allTextElementsStack->top()->_value);
+                              PushBackCode("lw " + defaultRegistryNameForInteger + ", " + _allTextElementsStack->top()->_value);
                               break;
                          }
                          case LexemType::Double://stala ale nieprawidlowa
@@ -752,7 +758,7 @@ public:
                                 yyerror("~Dublii value cannot be set on intii \n");
                          }
                     }
-                    _assemblerOutputCode->push_back("sw " + defaultRegistryNameForInteger + ", " + varName);
+                    PushBackCode("sw " + defaultRegistryNameForInteger + ", " + varName);
                }
           }
           return;
@@ -760,9 +766,9 @@ public:
 
      void GenerateReadAssembler(std::string varName)
      {
-          _assemblerOutputCode->push_back("li $v0 , 5");
-          _assemblerOutputCode->push_back("syscall");
-          _assemblerOutputCode->push_back("sw $v0, " + varName);
+          PushBackCode("li $v0 , 5");
+          PushBackCode("syscall");
+          PushBackCode("sw $v0, " + varName);
      }
      
      void GenerateConditionalIfStatementAssembler()
@@ -779,12 +785,12 @@ public:
      void GenerateConditionalJumpLabelAssembler()
      {
           std::string jumpLabel = GetAndRemoveJumpLabel();
-          _assemblerOutputCode->push_back(jumpLabel + ":");
+          PushBackCode(jumpLabel + ":");
      }
 
      std::string GenerateComparisonInstructionAssembler(CmpOperator comparisonOperator, std::string reg1, std::string reg2)
      {
-          _assemblerOutputCode->push_back("\n# conditional statement:");
+          PushBackCode("\n# conditional statement:");
            
           std::string assemblerInstruction = "";
 
@@ -824,7 +830,7 @@ public:
 
           std::string numberedLabel = GetLabelStringWithId();
           assemblerInstruction += " " + reg1 + ", " + reg2 + " ," + numberedLabel;
-          _assemblerOutputCode->push_back(assemblerInstruction);
+          PushBackCode(assemblerInstruction);
           return numberedLabel;
      }
 
