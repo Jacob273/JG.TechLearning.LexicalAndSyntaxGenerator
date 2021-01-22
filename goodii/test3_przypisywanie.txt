@@ -1,2 +1,0 @@
-intii a = 3;
-dublii b = 3;

@@ -1,0 +1,3 @@
+intii a = 0;
+ridi(a);
+printi(a);

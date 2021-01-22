@@ -1,3 +1,2 @@
-intii a = 1 + 2 * 5; 
 printi(5.0);
 printi(33);

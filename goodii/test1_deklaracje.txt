@@ -1,2 +1,4 @@
 intii a;
-intii b;
+dublii b;
+stringii c;
+boolii d;
