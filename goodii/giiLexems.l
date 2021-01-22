@@ -44,6 +44,9 @@ boolii					{ return BOOLEAN; }
 \<\=					{ return LEQ;}
 \!\=					{ return NEQ;}
 
+\>						{return LARGER;}
+\<						{return SMALLER;}
+
 [A-Za-z_][A-Za-z0-9_]*	{ 
 							yylval.textIdentifier = strdup(yytext);
 							return TEXT_IDENTIFIER;
