@@ -663,7 +663,7 @@ public:
      void GenerateAssemblerToPrintInteger(std::string value)
      {
            PushBackCode("\n\nli $v0, 1");//integer to print
-           PushBackCode("lw $a0, " + value);
+           PushBackCode("li $a0, " + value);
      }
 
      void GenerateAssemblerToPrintDouble(std::string value)
