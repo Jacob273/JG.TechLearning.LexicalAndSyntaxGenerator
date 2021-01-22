@@ -536,10 +536,10 @@ public:
       _triplesOutputFileAppender->append(result, true); 
      }
 
-     void BuildPrinting()
+     void BuildPrintingAssembler()
      {
           LexemType topElementType = _allTextElementsStack->top()->_type;
-          std::cout << "BuildPrinting:: top element type <" << topElementType << "> \n"; 
+          std::cout << "BuildPrintingAssembler:: top element type <" << topElementType << "> \n"; 
           switch(topElementType)
           {
                case LexemType::Integer:
@@ -564,7 +564,7 @@ public:
                          std::string value = _allTextElementsStack->top()->_value;
                          if(_symbols->count(value))
                          {
-                              std::cout << "BuildPrinting::Debug::Key succesfully found <" << value << "> \n";
+                              std::cout << "BuildPrintingAssembler::Debug::Key succesfully found <" << value << "> \n";
                               TextElement* foundSymbol = _symbols->find(value)->second;
                               typeFromSymbol = foundSymbol->_type;
 
@@ -585,12 +585,12 @@ public:
                          }
                          else
                          {
-                              std::cout << "BuildPrinting::Debug::Key not found<" << value << ">";
+                              std::cout << "BuildPrintingAssembler::Debug::Key not found<" << value << ">";
                          }
                     }
                     else
                     {
-                         std::cout << "Symbols are empty." << std::endl;
+                         yyerror("Symbols are empty. \n");
                     }
                }
           }
@@ -700,6 +700,13 @@ public:
           }
           return;
      }
+
+     void GenerateReadAssembler(std::string varName)
+     {
+          _assemblerOutputCode->push_back("li $v0 , 5");
+          _assemblerOutputCode->push_back("syscall");
+          _assemblerOutputCode->push_back("sw $v0, " + varName);
+     }
      
 };
 
@@ -754,8 +761,8 @@ expressionInBrackets:
      ;
 
 func:
-     PRINT expressionInBrackets       {printf("Syntax-Recognized: wyswietlenie wyrazenia w nawiasie \n"); builder->BuildPrinting();}
-     | READ '(' TEXT_IDENTIFIER ')'  {printf("Syntax-Recognized: wczytywanie \n"); } //TODO: builder->BuildReading($3);}
+       PRINT expressionInBrackets       { printf("Syntax-Recognized: wyswietlenie wyrazenia w nawiasie \n"); builder->BuildPrintingAssembler();}
+     | READ '(' TEXT_IDENTIFIER ')'     { printf("Syntax-Recognized: wczytywanie \n");  builder->GenerateReadAssembler($3); }
      ;
 
 assignment:
