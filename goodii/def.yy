@@ -608,7 +608,7 @@ public:
                case LexemType::Integer:
                {
                     std::string value = _allTextElementsStack->top()->_value;
-                    GenerateAssemblerToPrintInteger(value);
+                    GenerateAssemblerToPrintInteger(value, "li");
                     break;
                }
                case LexemType::Double:
@@ -636,7 +636,7 @@ public:
                                    case LexemType::Integer:
                                    {
                                         std::string value = _allTextElementsStack->top()->_value;
-                                        GenerateAssemblerToPrintInteger(value);
+                                        GenerateAssemblerToPrintInteger(value, "lw");
                                         break;
                                    }
                                    case LexemType::Double:
@@ -653,17 +653,17 @@ public:
                     }
                     else
                     {
-                         yyerror("Symbols are empty. \n");
+                         yyerror("Symbols are empty. Missing declaration? \n");
                     }
                }
           }
           PushBackCode("syscall \n");
      }
 
-     void GenerateAssemblerToPrintInteger(std::string value)
+     void GenerateAssemblerToPrintInteger(std::string value, std::string command)
      {
            PushBackCode("\n\nli $v0, 1");//integer to print
-           PushBackCode("li $a0, " + value);
+           PushBackCode(command + " $a0, " + value);
      }
 
      void GenerateAssemblerToPrintDouble(std::string value)
