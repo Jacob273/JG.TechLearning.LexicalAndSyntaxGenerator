@@ -667,6 +667,10 @@ public:
                               _assemblerOutputCode->push_back("lw " + defaultRegistryNameForInteger + ", " + _allTextElementsStack->top()->_value);
                               break;
                          }
+                         case LexemType::Double://stala ale nieprawidlowa
+                         {
+                                yyerror("Dublii value cannot be set on intii \n");
+                         }
                     }
                     _assemblerOutputCode->push_back("sw " + defaultRegistryNameForInteger + ", " + varName);
                }
