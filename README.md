@@ -1,5 +1,16 @@
 # Goodii Language Specification
 
+Note: Project is unfinished. Version 1.0 includes only possibility to:
+* declare variables (e.g intii a;)
+* assignment of intii and dublii values, (intii a = 5; dublii b = 5.0;)
+* arithmetic: multiplication, substraction, addition, division (intii a = 5 + 5; intii b = 5 + 10; intii c = a + b)
+* compilation errors when intii and dublii are used in a single statement (e.g intii a = 5; dublii b = 10.0; intii c = a + b; // compilation error!
+* printing value of intii and dublii to the otput stream (e.g printii(a); printii(5); printi(55.0);
+* reading value from input stream (e.g intii a; ridi(a);)
+* if statement - without else (e.g intii a = 5; intii b = 10; ifi(a => b) { //some action };
+
+(the whole specification is possibly for the future versions)
+
 ## **Goodii Types**
 
 | Name | Description |
@@ -97,12 +108,13 @@ Declaration of arrays with length = 5.
 ## Goodii Input/Output
 | name | description |
 | --- | --- |
-| **Printi (value as texti**) | Printing **stringii** value to output stream. |
-| **Printi (value as intii)** | Printing **intii** value to output stream. |
-| **Input (value as stringii)** | Reading **stringii** value from input stream and returns **stringii**. |
-| **Input (value as intii)** | Reading **intii** value from input stream and returns **intii**. |
+| **Printi (value**) | Printing **identifier** value to output stream. |
+| **Printi (5)** | Printing **intii** value to output stream. |
+| **Printi (55.0)** | Printing **dublii** value to output stream. |
+| **Ridi (value)** | Reading **intii** value from input stream and assign it to value identifier of type **intii*. |
 
 
-## **Examples**
+## Others
 
-![](RackMultipart20201016-4-11zhb6b_html_9c5b6a5a0cb7d6b9.png)
+* Intii values and Dublii values cannot be used in a single expression (e.g we cannot assign intii a = 5 + 5.0; as 5.0 is represented as Dublii)
+
