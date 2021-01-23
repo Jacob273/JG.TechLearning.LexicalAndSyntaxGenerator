@@ -30,7 +30,7 @@ Note: Project is unfinished. Version 1.0 includes only possibility to:
 
 | name | description |
 | --- | --- |
-| **whilii(_ condition _){ _//block of code_ }** | whilii can execute a block of code as long as condition is true. |
+| **whilii(_ condition _){ _//block of code_ }** | whilii can execute a block of code as long as condition is true. | (not supported in v1.0)
 
 
 
@@ -39,7 +39,7 @@ Note: Project is unfinished. Version 1.0 includes only possibility to:
 | name | description |
 | --- | --- |
 | **ifii** | Identifies if statement should be run. |
-| **ifii( __condition__){ ****}**** elsii ****{**** }** | Identifies which statement to run based on value of condition |
+| **ifii( __condition__){ ****}**** elsii ****{**** }** | Identifies which statement to run based on value of condition | (not supported in v1.0)
 
 ## **Goodii Relational operators**
 
@@ -61,24 +61,24 @@ Note: Project is unfinished. Version 1.0 includes only possibility to:
 | == | Checks if two operands are equal. |
 | != | Checks if two operands are not equal |
 | = | Assignment operator |
-| ++ | Increment operator increases integer value by one |
-| -- | Decrement operator decreases integer value by one |
+| ++ | Increment operator increases integer value by one | (not supported in v1.0)
+| -- | Decrement operator decreases integer value by one | (not supported in v1.0)
 
 ## ~~**Goodii Logical operators (not supported)**~~
 
-| ~~!~~ | ~~Logical NOT operator.~~ |
+| ! | Logical NOT operator. |
 | --- | --- |
-| ~~&amp;&amp;~~ | ~~Logical AND operator.~~ |
-| ~~||~~ | ~~Logical OR operator.~~ |
+| &amp;&amp; | Logical AND operator. |
+| \|\|| Logical OR operator. |
 
 ##
 
-## **Goodii keywords / literals**
+## **Goodii keywords / literals (not supported in v1.0)**
 | name | description |
 | --- | --- |
 | **returnii** | Finishes the execution. |
 
-## **Goodii literals**
+## **Goodii literals (not supported in v1.0)**
 
 | name | description |
 | --- | --- |
@@ -99,7 +99,7 @@ Note: Project is unfinished. Version 1.0 includes only possibility to:
 | \n | New Line |
 | // | Comment |
 
-## **Goodii Arrays**
+## **Goodii Arrays (not supported in v1.0)**
 
 Declaration of arrays with length = 5.
 
