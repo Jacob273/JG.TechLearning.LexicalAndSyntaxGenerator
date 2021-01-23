@@ -30,7 +30,7 @@ Note: Project is unfinished. Version 1.0 includes only possibility to:
 
 | name | description |
 | --- | --- |
-| **whilii(_ condition _){ _//block of code_ }** | whilii can execute a block of code as long as condition is true. | (not supported in v1.0)
+| **whilii(_ condition _){ _//block of code_ }** | whilii can execute a block of code as long as condition is true. (not supported in v1.0) | 
 
 
 
@@ -39,7 +39,7 @@ Note: Project is unfinished. Version 1.0 includes only possibility to:
 | name | description |
 | --- | --- |
 | **ifii** | Identifies if statement should be run. |
-| **ifii( __condition__){ ****}**** elsii ****{**** }** | Identifies which statement to run based on value of condition | (not supported in v1.0)
+| **ifii( __condition__){ ****}**** elsii ****{**** }** | Identifies which statement to run based on value of condition . (not supported in v1.0)| 
 
 ## **Goodii Relational operators**
 
@@ -61,10 +61,10 @@ Note: Project is unfinished. Version 1.0 includes only possibility to:
 | == | Checks if two operands are equal. |
 | != | Checks if two operands are not equal |
 | = | Assignment operator |
-| ++ | Increment operator increases integer value by one | (not supported in v1.0)
-| -- | Decrement operator decreases integer value by one | (not supported in v1.0)
+| ++ | Increment operator increases integer value by one (not supported in v1.0) |
+| -- | Decrement operator decreases integer value by one (not supported in v1.0) | 
 
-## ~~**Goodii Logical operators (not supported)**~~
+## **Goodii Logical operators (not supported in v1.0)**
 
 | ! | Logical NOT operator. |
 | --- | --- |
