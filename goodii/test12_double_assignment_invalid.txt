@@ -1,0 +1,4 @@
+intii a = 10;
+a = 11;
+dublii b = 12;
+a = b;
