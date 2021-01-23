@@ -517,7 +517,7 @@ public:
           TextElement* resultVariable = new TextElement(LexemType::Txt, numberedResult);
           PushGoodiiElement(resultVariable);
 
-          PushBackCode("#" + result);
+          PushBackCode("\n#" + result);
 
           LexemType typeFromSymbol1 = LexemType::Unknown;
           LexemType typeFromSymbol2 = LexemType::Unknown;
@@ -557,6 +557,7 @@ public:
           std::pair<LexemType, LexemType> processedTypes = GetProcessedTypes(tripleType, first, second, typeFromSymbol1, typeFromSymbol2);
           ExecuteTypeValidation(tripleType, processedTypes.first, processedTypes.second, arithmeticOperator);
 
+          //CAUTION: this assembler generation code is unfinished, it will work for intii a = 5 + 3 * 2; but won't work for a = b + c + 3;
           if(processedTypes.first == LexemType::Integer && processedTypes.second == LexemType::Integer)
           {
                     GenerateAssignmentCodeForAssembler(first->_type, first->_value, "$t0");
@@ -569,7 +570,7 @@ public:
                {
                     defaultValue1 = first->_value;
                }
-
+               std::cout << "Debugging::Double && Double" << std::endl;
                std::string tempStringLabel1 = GetTempStringWithId();
                InsertSymbol(LexemType::Double, tempStringLabel1, defaultValue1);
                GenerateAssignmentCodeForAssembler(processedTypes.second, tempStringLabel1, "$f0");
@@ -583,6 +584,21 @@ public:
                std::string tempStringLabel2 = GetTempStringWithId();
                InsertSymbol(LexemType::Double, tempStringLabel2, defaultValue2);
                GenerateAssignmentCodeForAssembler(processedTypes.second, tempStringLabel2, "$f1");
+          }
+           else if (processedTypes.first == LexemType::Txt && processedTypes.second == LexemType::Integer)
+          {
+               //TODO1:
+               //std::cout << "DEBUG:: TXT i INTEGER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+               //  std::cout << first->_value << second->_value << std:: endl << std::endl;
+               // _assemblerOutputCode->push_back("#NEW line!!!!!!!!!");
+               // _assemblerOutputCode->push_back("lw $t0, " + numberedResult);// we need result_1 here
+               // _assemblerOutputCode->push_back("li $t1, " + second->_value);
+               
+          }
+          else if (processedTypes.first == LexemType::Txt && processedTypes.second == LexemType::Double)
+          {
+               //TODO2:
+               //std::cout << "DEBUG:: TXT i DOUBLE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
           }
 
          if(CanGenerateArithmeticForInts(first->_type, second->_type))
