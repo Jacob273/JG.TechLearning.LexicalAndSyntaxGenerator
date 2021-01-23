@@ -1,0 +1,412 @@
+=======================================
+PASS przypisywanie_int_and_double.txt
+=======================================
+.data 
+a: .word   0
+b: .float   3.000000
+
+.text
+
+#a=3
+li $t0, 3
+sw $t0, a
+
+=======================================
+PASS test4_dodawanie_int.txt
+=======================================
+.data 
+result_1: .word   0
+result_2: .word   0
+
+.text
+
+#4+4
+li $t0, 4
+li $t1, 4
+add $t0, $t0, $t1
+sw $t0, result_1
+
+#5+5
+li $t0, 5
+li $t1, 5
+add $t0, $t0, $t1
+sw $t0, result_2
+=======================================
+PASS test_odejmowanie.txt
+=======================================
+.data 
+result_1: .word   0
+
+.text
+
+#4-4
+li $t0, 4
+li $t1, 4
+sub $t0, $t0, $t1
+sw $t0, result_1
+=======================================
+PASS test5_operacjeArytmetyczne_double.txt 
+=======================================
+.data 
+result_1: .float   0
+result_2: .float   0
+result_3: .float   0
+result_4: .float   0
+temp_1: .float   300.500000
+temp_2: .float   300.300000
+temp_3: .float   600.500000
+temp_4: .float   700.700000
+temp_5: .float   300.300000
+temp_6: .float   300.200000
+temp_7: .float   900.300000
+temp_8: .float   900.000000
+
+.text
+
+#300.500000+300.300000
+l.s $f0, temp_1
+l.s $f1, temp_2
+add.s $f0, $f0, $f1
+s.s $f0, result_1
+
+#600.500000-700.700000
+l.s $f0, temp_3
+l.s $f1, temp_4
+sub.s $f0, $f0, $f1
+s.s $f0, result_2
+
+#300.300000*300.200000
+l.s $f0, temp_5
+l.s $f1, temp_6
+mul.s $f0, $f0, $f1
+s.s $f0, result_3
+
+#900.300000-900.000000
+l.s $f0, temp_7
+l.s $f1, temp_8
+sub.s $f0, $f0, $f1
+s.s $f0, result_4
+=======================================
+PASS test5_operacjeArytmetyczne_int.txt 
+=======================================
+.data 
+result_1: .word   0
+result_2: .word   0
+result_3: .word   0
+result_4: .word   0
+
+.text
+
+#300+300
+li $t0, 300
+li $t1, 300
+add $t0, $t0, $t1
+sw $t0, result_1
+
+#600-700
+li $t0, 600
+li $t1, 700
+sub $t0, $t0, $t1
+sw $t0, result_2
+
+#300*300
+li $t0, 300
+li $t1, 300
+mul $t0, $t0, $t1
+sw $t0, result_3
+
+#900-900
+li $t0, 900
+li $t1, 900
+sub $t0, $t0, $t1
+sw $t0, result_4
+=======================================
+PASS test6_triples_invalid1.txt 
+=======================================
+1: Goodii language <v. 1.0> does not support expression which as has both dublii and intii. Operation: '*' 
+=======================================
+
+
+=======================================
+PASS test6_triples_invalid2.txt 
+=======================================
+1: Goodii language <v. 1.0> does not support expression which as has both dublii and intii. Operation: '+' 
+=======================================
+
+
+=======================================
+PASS test7_printi.txt
+=======================================
+.data 
+temp_1: .float   5.000000
+
+.text
+
+
+
+li $v0, 2
+l.s $f12, temp_1
+syscall 
+
+
+
+li $v0, 1
+li $a0, 33
+syscall 
+=======================================
+PASS test8_ridi.txt
+=======================================
+.data 
+a: .word   0
+
+.text
+
+#a=0
+li $t0, 0
+sw $t0, a
+li $v0 , 5
+syscall
+sw $v0, a
+
+
+li $v0, 1
+lw $a0, a
+syscall 
+=======================================
+PASS test9_assignment_and_printing_int.txt
+=======================================
+.data 
+a: .word   0
+
+.text
+
+#a=5
+li $t0, 5
+sw $t0, a
+
+
+li $v0, 1
+lw $a0, a
+syscall 
+
+#a=700
+li $t0, 700
+sw $t0, a
+
+
+li $v0, 1
+lw $a0, a
+syscall 
+=======================================
+PASS test10_assignment_and_printing_reassignment_int.txt 
+=======================================
+.data 
+a: .word   0
+b: .word   0
+
+.text
+
+#a=10
+li $t0, 10
+sw $t0, a
+
+
+li $v0, 1
+lw $a0, a
+syscall 
+
+#a=11
+li $t0, 11
+sw $t0, a
+
+
+li $v0, 1
+lw $a0, a
+syscall 
+
+#b=12
+li $t0, 12
+sw $t0, b
+
+
+li $v0, 1
+lw $a0, b
+syscall 
+
+#a=b
+lw $t0, b
+sw $t0, a
+
+
+li $v0, 1
+lw $a0, a
+syscall 
+
+
+
+li $v0, 1
+lw $a0, b
+syscall 
+=======================================
+PASS test11_int_assignment_invalid.txt
+=======================================
+1: Dublii value cannot be set on declared intii 
+
+
+=======================================
+PASS test12_double_assignment_invalid.txt
+======================================
+3: Intii value cannot be set on declared Dublii 
+
+=======================================
+PASS test12_int_assignment_invalid2.txt
+======================================
+1: ~Dublii value cannot be set on intii 
+
+======================================
+PASS test13_int_assignment_invalid3.txt 
+======================================
+3: Intii value cannot be set on declared Dublii 
+
+
+======================================
+PASS test14_double_assignment.txt
+======================================
+.data 
+a: .float   5.000000
+b: .float   7.000000
+
+.text
+
+#a=b
+lw $t0, b
+sw $t0, a
+
+
+li $v0, 2
+l.s $f12, a
+syscall 
+
+
+li $v0, 2
+l.s $f12, b
+syscall 
+
+======================================
+PASS test15_ridi_int.txt
+======================================
+.data 
+a: .word   0
+
+.text
+
+#a=0
+li $t0, 0
+sw $t0, a
+li $v0 , 5
+syscall
+sw $v0, a
+
+
+li $v0, 1
+lw $a0, a
+syscall 
+
+
+======================================
+PASS test15_ridi_int.txt
+======================================
+.data 
+a: .word   0
+
+.text
+
+#a=0
+li $t0, 0
+sw $t0, a
+li $v0 , 5
+syscall
+sw $v0, a
+
+
+li $v0, 1
+lw $a0, a
+syscall 
+
+======================================
+PASS test17_ifstart.txt
+======================================
+.data 
+a: .word   0
+b: .word   0
+c: .word   0
+result_1: .word   0
+result_2: .word   0
+result_3: .word   0
+
+.text
+
+#a=10
+li $t0, 10
+sw $t0, a
+#b=11
+li $t0, 11
+sw $t0, b
+#c=0
+li $t0, 0
+sw $t0, c
+lw $t1, b
+lw $t0, a
+
+# conditional statement:
+bgt $t0, $t1 ,jmplabel_1
+#a+100
+lw $t0, a
+li $t1, 100
+add $t0, $t0, $t1
+sw $t0, result_1
+
+
+
+li $v0, 1
+lw $a0, result_1
+syscall 
+
+jmplabel_1:
+lw $t1, c
+lw $t0, a
+
+# conditional statement:
+blt $t0, $t1 ,jmplabel_2
+#a+200
+lw $t0, a
+li $t1, 200
+add $t0, $t0, $t1
+sw $t0, result_2
+
+
+
+li $v0, 1
+lw $a0, result_2
+syscall 
+
+jmplabel_2:
+lw $t1, b
+lw $t0, a
+
+# conditional statement:
+bne $t0, $t1 ,jmplabel_3
+#a+100
+lw $t0, a
+li $t1, 100
+add $t0, $t0, $t1
+sw $t0, result_3
+
+
+
+li $v0, 1
+lw $a0, result_3
+syscall 
+
+jmplabel_3:
+======================================
