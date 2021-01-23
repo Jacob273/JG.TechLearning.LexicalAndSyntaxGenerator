@@ -21,5 +21,10 @@
 
 
 
+# Example goodii code generated to .asm
 
-    ![generated_example](./an_example_generated_code.jpg)
+ ![generated_example](./an_example_generated_code.jpg)
+
+
+# MIPS in action
+![mars_in_action](./mars_in_action.jpg)
