@@ -11,6 +11,12 @@ Note: Project is unfinished. Version 1.0 includes only possibility to:
 
 (the whole specification is possibly for the future versions)
 
+
+
+# Goodii code generated to .asm
+
+ ![generated_example](./an_example_generated_code.jpg)
+
 ## **Goodii Types**
 
 | Name | Description |
